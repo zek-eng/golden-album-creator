@@ -31,12 +31,21 @@ function Index() {
   const update = (k: keyof PosterData) => (e: ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [k]: e.target.value }));
 
-  const onUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => setData((d) => ({ ...d, choirImage: reader.result as string }));
-    reader.readAsDataURL(f);
+    // Show original immediately for fast feedback
+    setBusy("Removing background…");
+    try {
+      const original = await fileToDataUrl(f);
+      setData((d) => ({ ...d, choirImage: original }));
+      const cleaned = await removeImageBackground(f);
+      setData((d) => ({ ...d, choirImage: cleaned }));
+    } catch (err) {
+      console.error("Background removal failed", err);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const run = async (label: string, fn: () => Promise<void>) => {
