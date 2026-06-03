@@ -74,6 +74,11 @@ function Index() {
                 onChange={onUpload}
                 className="bg-[#0f0703] border-[#3a2410] text-[#e2c89a] file:text-[#c9a878]"
               />
+              <p className="text-xs text-[#8a6a48]">
+                {busy === "Removing background…"
+                  ? "Removing background, this may take a few seconds…"
+                  : "Background is removed automatically for a clean composite."}
+              </p>
             </div>
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
