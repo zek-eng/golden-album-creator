@@ -40,7 +40,7 @@ async function fetchFontCss(): Promise<string> {
   if (cachedFontCss !== null) return cachedFontCss;
   try {
     const res = await fetch(
-      "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Allura&display=swap"
+      "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Allura&display=swap"
     );
     const css = await res.text();
     // Fetch each woff2 and inline as data URL so the rasterized SVG has fonts
