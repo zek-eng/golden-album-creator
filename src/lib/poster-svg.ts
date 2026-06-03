@@ -4,6 +4,7 @@ export interface PosterData {
   albumTitle: string;
   newAlbumText: string;
   comingSoonText: string;
+  socialHandle?: string;
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -12,73 +13,73 @@ export const DEFAULT_POSTER: PosterData = {
   albumTitle: "MFALME WA WAFALME",
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
+  socialHandle: "The_HarmonyTz",
 };
 
 // Poster canvas — 2:3 luxury album-cover proportion
 export const POSTER_W = 1080;
-export const POSTER_H = 1528;
+export const POSTER_H = 1620;
 
-// Where the choir photo sits (will be auto-centered & scaled to fit)
+// Choir image area — generous breathing room from heading above and card below
 export const IMAGE_AREA = {
   x: 70,
-  y: 430,
+  y: 470,
   w: POSTER_W - 140, // 940
-  h: 780,
+  h: 720,
 };
 
-function splitChoirName(name: string) {
-  const tokens = name.trim().split(/\s+/);
-  let top = "";
-  let main = name.trim();
-  let suffix = "";
-  if (tokens.length >= 2 && /^the$/i.test(tokens[0])) {
-    top = "THE";
-    const rest = tokens.slice(1);
-    if (rest.length >= 2) {
-      main = rest.slice(0, -1).join(" ").toUpperCase();
-      suffix = rest[rest.length - 1];
-    } else {
-      main = rest.join(" ").toUpperCase();
-    }
-  } else if (tokens.length >= 2) {
-    main = tokens.slice(0, -1).join(" ").toUpperCase();
-    suffix = tokens[tokens.length - 1];
-  } else {
-    main = name.toUpperCase();
+/**
+ * Split the choir name so the last token is rendered in a script (signature) font.
+ * "THE HARMONY TZ" -> serif: "THE HARMONY", script: "Tz"
+ */
+function splitName(name: string) {
+  const tokens = name.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length <= 1) {
+    return { serif: name.toUpperCase(), script: "" };
   }
-  if (suffix) suffix = suffix.charAt(0).toUpperCase() + suffix.slice(1).toLowerCase();
-  return { top, main, suffix };
+  const last = tokens[tokens.length - 1];
+  const serif = tokens.slice(0, -1).join(" ").toUpperCase();
+  const script = last.charAt(0).toUpperCase() + last.slice(1).toLowerCase();
+  return { serif, script };
 }
 
 export function buildPosterSVG(data: PosterData): string {
-  const { top, main, suffix } = splitChoirName(data.choirName);
-  const mainLen = main.length || 1;
-  // Cinzel is wider — tune size accordingly
-  const mainSize = Math.min(118, Math.max(58, Math.floor(980 / Math.max(mainLen, 6) * 1.45)));
-  const suffixSize = Math.round(mainSize * 1.05);
+  const { serif, script } = splitName(data.choirName);
+  const serifLen = serif.length || 1;
+  // Lighter / slimmer — not bold. Tuned for Cinzel weight 400.
+  const serifSize = Math.min(96, Math.max(54, Math.floor(940 / Math.max(serifLen, 6) * 1.25)));
+  const scriptSize = Math.round(serifSize * 1.55);
 
   const { x: ix, y: iy, w: iw, h: ih } = IMAGE_AREA;
   const cx = POSTER_W / 2;
+  const cy = POSTER_H / 2;
 
   const img = data.choirImage
     ? `<image id="choir_image" href="${data.choirImage}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMax meet" />`
     : `<g id="choir_image_placeholder">
          <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="#2a1608" opacity="0.25" rx="14"/>
-         <text x="${cx}" y="${iy + ih / 2}" text-anchor="middle" fill="#8a6a48" font-family="'Cormorant Garamond', serif" font-size="28">Upload choir photo</text>
+         <text x="${cx}" y="${iy + ih / 2}" text-anchor="middle" fill="#8a6a48" font-family="'Cinzel', serif" font-size="28">Upload choir photo</text>
        </g>`;
 
-  // Album card geometry (Apple-style glass)
+  // Album card geometry (Apple-style glass) — placed well below image
   const cardW = 820;
-  const cardH = 132;
+  const cardH = 130;
   const cardX = cx - cardW / 2;
-  const cardY = 1220;
+  const cardY = iy + ih + 60; // 60px breathing room after photo
   const cardR = 26;
 
+  // Footer geometry
+  const newAlbumY = cardY + cardH + 70;
+  const comingSoonY = newAlbumY + 90;
+  const socialY = POSTER_H - 70;
+
+  const handle = data.socialHandle?.trim() || "The_HarmonyTz";
+
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cormorant Garamond', serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cinzel', serif">
   <defs>
     <!-- Rich cinematic chocolate backdrop -->
-    <radialGradient id="bgGrad" cx="50%" cy="32%" r="85%">
+    <radialGradient id="bgGrad" cx="50%" cy="30%" r="85%">
       <stop offset="0%"  stop-color="#a8642c"/>
       <stop offset="22%" stop-color="#7a3f1a"/>
       <stop offset="55%" stop-color="#3a1c0c"/>
@@ -91,37 +92,30 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
     </linearGradient>
 
-    <!-- Heavy vignette -->
     <radialGradient id="vignette" cx="50%" cy="50%" r="78%">
       <stop offset="55%" stop-color="#000" stop-opacity="0"/>
       <stop offset="100%" stop-color="#000" stop-opacity="0.75"/>
     </radialGradient>
 
-    <!-- Soft ambient halo behind subject -->
     <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#ffce85" stop-opacity="0.55"/>
-      <stop offset="40%"  stop-color="#c9772e" stop-opacity="0.22"/>
+      <stop offset="0%"   stop-color="#ffce85" stop-opacity="0.5"/>
+      <stop offset="40%"  stop-color="#c9772e" stop-opacity="0.2"/>
       <stop offset="100%" stop-color="#c9772e" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Floor light pool -->
     <radialGradient id="floorPool" cx="50%" cy="50%" r="50%">
       <stop offset="0%"   stop-color="#ffd8a0" stop-opacity="0.45"/>
       <stop offset="60%"  stop-color="#a96a2e" stop-opacity="0.10"/>
       <stop offset="100%" stop-color="#a96a2e" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Luxury metallic gold (multi-stop) -->
+    <!-- Luxury metallic gold -->
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"   stop-color="#fff1c8"/>
       <stop offset="25%"  stop-color="#f3d28a"/>
       <stop offset="50%"  stop-color="#caa05a"/>
       <stop offset="75%"  stop-color="#8a5a26"/>
       <stop offset="100%" stop-color="#efd2a0"/>
-    </linearGradient>
-    <linearGradient id="goldHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.85"/>
-      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stop-color="#a87a42" stop-opacity="0"/>
@@ -136,16 +130,15 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
     </linearGradient>
     <linearGradient id="glassTopGloss" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.4"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="glassEdge" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#fff1c8" stop-opacity="0.95"/>
+      <stop offset="0%"   stop-color="#fff1c8" stop-opacity="0.9"/>
       <stop offset="50%"  stop-color="#caa05a" stop-opacity="0.55"/>
       <stop offset="100%" stop-color="#3a1c0c" stop-opacity="0.7"/>
     </linearGradient>
 
-    <!-- Soft drop shadow for glass card -->
     <filter id="cardShadow" x="-20%" y="-30%" width="140%" height="180%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
       <feOffset dx="0" dy="14" result="o"/>
@@ -153,27 +146,24 @@ export function buildPosterSVG(data: PosterData): string {
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 
-    <!-- Gold text glow -->
+    <!-- Soft gold glow (subtle, not glossy/bold) -->
     <filter id="goldGlow" x="-20%" y="-50%" width="140%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="b1"/>
-      <feColorMatrix in="b1" values="1 0 0 0 0.95   0 1 0 0 0.78   0 0 1 0 0.42   0 0 0 0.9 0"/>
+      <feGaussianBlur stdDeviation="2" result="b1"/>
+      <feColorMatrix in="b1" values="1 0 0 0 0.95   0 1 0 0 0.78   0 0 1 0 0.42   0 0 0 0.55 0"/>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 
-    <!-- Subject ground shadow -->
     <radialGradient id="subjectShadow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#000" stop-opacity="0.65"/>
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.6"/>
       <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Fine grain noise overlay -->
     <filter id="grain" x="0" y="0" width="100%" height="100%">
       <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="7"/>
       <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 0.06 0"/>
       <feComposite in2="SourceGraphic" operator="in"/>
     </filter>
 
-    <!-- Frame stroke gradient -->
     <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%"  stop-color="#caa05a" stop-opacity="0.55"/>
       <stop offset="50%" stop-color="#fff1c8" stop-opacity="0.95"/>
@@ -181,62 +171,53 @@ export function buildPosterSVG(data: PosterData): string {
     </linearGradient>
   </defs>
 
-  <!-- BACKGROUND LAYERS -->
+  <!-- BACKGROUND -->
   <g id="background">
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="#0a0402"/>
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgGrad)"/>
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgWarmth)"/>
-    <!-- soft halo behind subject -->
     <ellipse cx="${cx}" cy="${iy + ih * 0.45}" rx="${iw * 0.55}" ry="${ih * 0.55}" fill="url(#ambientGlow)"/>
-    <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#vignette)"/>
-    <rect width="${POSTER_W}" height="${POSTER_H}" filter="url(#grain)" opacity="0.55"/>
   </g>
+
+  <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
+  <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
+    <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+          font-family="'Great Vibes', cursive" font-size="420"
+          fill="url(#goldGrad)" letter-spacing="6">${escapeXml(script || "Harmony")}</text>
+  </g>
+
+  <!-- Vignette + grain over watermark -->
+  <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#vignette)"/>
+  <rect width="${POSTER_W}" height="${POSTER_H}" filter="url(#grain)" opacity="0.5"/>
 
   <!-- Inner thin gold frame -->
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
-        stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.55"/>
+        stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
 
-  <!-- Watermark script behind title -->
-  <g id="watermark" opacity="0.07">
-    <text x="${cx}" y="380" text-anchor="middle"
-          font-family="'Great Vibes', cursive" font-size="340" fill="#f3d28a">Harmony</text>
-  </g>
-
-  <!-- TITLE BLOCK -->
+  <!-- TITLE BLOCK — Cinzel (non-bold) + Great Vibes signature -->
   <g id="title">
-    ${top ? `<text x="${cx}" y="190" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="500"
-          fill="url(#goldGrad)" font-size="40" letter-spacing="26">${escapeXml(top)}</text>` : ""}
+    <text x="${cx}" y="240" text-anchor="middle"
+          font-family="'Cinzel', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="${serifSize}" letter-spacing="10"
+          filter="url(#goldGlow)">${escapeXml(serif)}</text>
 
-    <text x="${cx}" y="${top ? 300 : 250}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="600"
-          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="14"
-          filter="url(#goldGlow)">${escapeXml(main)}</text>
-    <!-- subtle highlight overlay on main title -->
-    <text x="${cx}" y="${top ? 300 : 250}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="600"
-          fill="url(#goldHighlight)" font-size="${mainSize}" letter-spacing="14" opacity="0.55">${escapeXml(main)}</text>
+    ${script ? `<text x="${cx}" y="${240 + serifSize * 0.95}" text-anchor="middle"
+          font-family="'Great Vibes', cursive" font-weight="400"
+          fill="url(#goldGrad)" font-size="${scriptSize}"
+          filter="url(#goldGlow)">${escapeXml(script)}</text>` : ""}
 
-    ${suffix ? `<text x="${cx}" y="${top ? 380 : 330}" text-anchor="middle"
-          font-family="'Great Vibes', cursive"
-          fill="url(#goldGrad)" font-size="${suffixSize}" filter="url(#goldGlow)">${escapeXml(suffix)}</text>` : ""}
-
-    <!-- Decorative gold rule + crown -->
-    <line x1="${cx - 200}" y1="${suffix ? 420 : (top ? 360 : 310)}" x2="${cx - 50}" y2="${suffix ? 420 : (top ? 360 : 310)}" stroke="url(#goldLine)" stroke-width="1.2"/>
-    <line x1="${cx + 50}" y1="${suffix ? 420 : (top ? 360 : 310)}" x2="${cx + 200}" y2="${suffix ? 420 : (top ? 360 : 310)}" stroke="url(#goldLine)" stroke-width="1.2"/>
-    <g transform="translate(${cx - 32} ${(suffix ? 420 : (top ? 360 : 310)) - 22})" fill="url(#goldGrad)" filter="url(#goldGlow)">
-      <path d="M0 30 L10 8 L22 22 L32 0 L42 22 L54 8 L64 30 L58 38 L6 38 Z"/>
-      <rect x="2" y="40" width="60" height="3.5" rx="1.5"/>
-      <circle cx="10" cy="7" r="2.2"/>
-      <circle cx="32" cy="-1" r="2.6"/>
-      <circle cx="54" cy="7" r="2.2"/>
+    <!-- Decorative gold rule + small crown -->
+    <line x1="${cx - 220}" y1="430" x2="${cx - 60}" y2="430" stroke="url(#goldLine)" stroke-width="1"/>
+    <line x1="${cx + 60}"  y1="430" x2="${cx + 220}" y2="430" stroke="url(#goldLine)" stroke-width="1"/>
+    <g transform="translate(${cx - 28} 410)" fill="url(#goldGrad)" opacity="0.95">
+      <path d="M0 26 L9 7 L19 19 L28 0 L37 19 L47 7 L56 26 L50 33 L6 33 Z"/>
+      <rect x="2" y="35" width="52" height="3" rx="1.5"/>
     </g>
   </g>
 
-  <!-- Floor light pool -->
-  <ellipse cx="${cx}" cy="${iy + ih - 20}" rx="${iw * 0.5}" ry="68" fill="url(#floorPool)"/>
-  <!-- Subject ground shadow -->
-  <ellipse cx="${cx}" cy="${iy + ih - 4}" rx="${iw * 0.38}" ry="24" fill="url(#subjectShadow)" opacity="0.8"/>
+  <!-- Floor light + subject shadow -->
+  <ellipse cx="${cx}" cy="${iy + ih - 20}" rx="${iw * 0.5}" ry="60" fill="url(#floorPool)"/>
+  <ellipse cx="${cx}" cy="${iy + ih - 4}" rx="${iw * 0.38}" ry="22" fill="url(#subjectShadow)" opacity="0.8"/>
 
   <!-- CHOIR PHOTO (transparent PNG) -->
   <g id="choir_photo">
@@ -245,40 +226,68 @@ export function buildPosterSVG(data: PosterData): string {
 
   <!-- APPLE-STYLE GLASS ALBUM CARD -->
   <g id="album_card" filter="url(#cardShadow)">
-    <!-- Frosted glass base -->
     <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="${cardR}" ry="${cardR}"
           fill="url(#glassFill)"/>
-    <!-- Inner soft top gloss -->
     <rect x="${cardX + 1}" y="${cardY + 1}" width="${cardW - 2}" height="${cardH * 0.45}" rx="${cardR - 2}" ry="${cardR - 2}"
-          fill="url(#glassTopGloss)" opacity="0.55"/>
-    <!-- Thin gold edge stroke -->
+          fill="url(#glassTopGloss)" opacity="0.5"/>
     <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardW - 1}" height="${cardH - 1}" rx="${cardR}" ry="${cardR}"
           fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
-    <!-- Outer faint glow line -->
-    <rect x="${cardX - 3}" y="${cardY - 3}" width="${cardW + 6}" height="${cardH + 6}" rx="${cardR + 3}" ry="${cardR + 3}"
-          fill="none" stroke="#fff1c8" stroke-opacity="0.10" stroke-width="1"/>
-
-    <text x="${cx}" y="${cardY + cardH / 2 + 16}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="500"
-          fill="url(#goldGrad)" font-size="46" letter-spacing="12"
+    <text x="${cx}" y="${cardY + cardH / 2 + 14}" text-anchor="middle"
+          font-family="'Cinzel', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="44" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(data.albumTitle)}</text>
   </g>
 
-  <!-- FOOTER -->
+  <!-- FOOTER LABELS -->
   <g id="footer">
-    <text x="${cx}" y="${cardY + cardH + 70}" text-anchor="middle"
-          fill="#d4b07c" font-family="'Cinzel', serif" font-size="22" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
-    <line x1="${cx - 30}" y1="${cardY + cardH + 90}" x2="${cx + 30}" y2="${cardY + cardH + 90}" stroke="url(#goldLine)" stroke-width="1"/>
-    <text x="${cx}" y="${cardY + cardH + 160}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="600"
-          fill="url(#goldGrad)" font-size="58" letter-spacing="22"
+    <text x="${cx}" y="${newAlbumY}" text-anchor="middle"
+          fill="#d4b07c" font-family="'Cinzel', serif" font-weight="400"
+          font-size="22" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
+    <line x1="${cx - 30}" y1="${newAlbumY + 18}" x2="${cx + 30}" y2="${newAlbumY + 18}" stroke="url(#goldLine)" stroke-width="1"/>
+    <text x="${cx}" y="${comingSoonY}" text-anchor="middle"
+          font-family="'Cinzel', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="54" letter-spacing="18"
           filter="url(#goldGlow)">${escapeXml(data.comingSoonText)}</text>
+  </g>
 
-    <!-- bottom light flare -->
-    <ellipse cx="${cx}" cy="${POSTER_H - 60}" rx="260" ry="3" fill="#ffe1ad" opacity="0.55"/>
-    <ellipse cx="${cx}" cy="${POSTER_H - 60}" rx="380" ry="10" fill="#e09a52" opacity="0.18"/>
+  <!-- SOCIAL FOOTER — Instagram + YouTube icons + handle -->
+  <g id="social" transform="translate(${cx} ${socialY})">
+    ${socialBlock(handle)}
   </g>
 </svg>`;
+}
+
+function socialBlock(handle: string): string {
+  const text = `@${handle}`;
+  // approximate width to center the group
+  const approxTextW = text.length * 12;
+  const iconSize = 26;
+  const gap = 14;
+  const groupW = iconSize + gap + iconSize + gap + approxTextW;
+  const startX = -groupW / 2;
+  const iconY = -iconSize / 2;
+
+  return `
+    <g transform="translate(${startX} 0)">
+      <!-- Instagram icon -->
+      <g transform="translate(0 ${iconY})" fill="none" stroke="url(#goldGrad)" stroke-width="1.6">
+        <rect x="1" y="1" width="${iconSize - 2}" height="${iconSize - 2}" rx="6"/>
+        <circle cx="${iconSize / 2}" cy="${iconSize / 2}" r="5.2"/>
+        <circle cx="${iconSize - 6}" cy="6" r="1.4" fill="url(#goldGrad)" stroke="none"/>
+      </g>
+      <!-- YouTube icon -->
+      <g transform="translate(${iconSize + gap} ${iconY})">
+        <rect x="0" y="3" width="${iconSize}" height="${iconSize - 6}" rx="6"
+              fill="none" stroke="url(#goldGrad)" stroke-width="1.6"/>
+        <path d="M${iconSize / 2 - 3} ${iconSize / 2 - 4} L${iconSize / 2 + 5} ${iconSize / 2} L${iconSize / 2 - 3} ${iconSize / 2 + 4} Z"
+              fill="url(#goldGrad)"/>
+      </g>
+      <!-- Handle -->
+      <text x="${iconSize + gap + iconSize + gap}" y="6"
+            font-family="'Cinzel', serif" font-weight="400"
+            font-size="20" letter-spacing="4" fill="url(#goldGrad)">${escapeXml(text)}</text>
+    </g>
+  `;
 }
 
 function escapeXml(s: string): string {

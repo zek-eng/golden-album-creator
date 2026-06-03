@@ -117,6 +117,7 @@ function Index() {
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
             <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
+            <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
 
             <div className="pt-2">
               <p className="mb-2 text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
@@ -135,7 +136,7 @@ function Index() {
                 src={svgDataUrl}
                 alt="Poster preview"
                 className="h-auto w-full rounded shadow-2xl"
-                style={{ aspectRatio: "1080 / 1528" }}
+                style={{ aspectRatio: "1080 / 1620" }}
               />
             </div>
           </section>
