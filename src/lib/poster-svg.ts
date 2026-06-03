@@ -199,8 +199,8 @@ export function buildPosterSVG(data: PosterData): string {
   <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
   <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
     <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
-          font-family="'Great Vibes', cursive" font-size="420"
-          fill="url(#goldGrad)" letter-spacing="6">${escapeXml(script || "Harmony")}</text>
+          font-family="'Allura', cursive" font-size="460"
+          fill="url(#goldGrad)" letter-spacing="6">${escapeXml(main || "Harmony")}</text>
   </g>
 
   <!-- Vignette + grain over watermark -->
@@ -211,26 +211,32 @@ export function buildPosterSVG(data: PosterData): string {
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
         stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
 
-  <!-- TITLE BLOCK — Cinzel (non-bold) + Great Vibes signature -->
+  <!-- TITLE BLOCK — "THE" on top, "HARMONY" below, then "Tz" signature -->
   <g id="title">
-    <text x="${cx}" y="240" text-anchor="middle"
+    ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
           font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="${serifSize}" letter-spacing="10"
-          filter="url(#goldGlow)">${escapeXml(serif)}</text>
+          fill="url(#goldGrad)" font-size="44" letter-spacing="32"
+          filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
 
-    ${script ? `<text x="${cx}" y="${240 + serifSize * 0.95}" text-anchor="middle"
-          font-family="'Great Vibes', cursive" font-weight="400"
+    <text x="${cx}" y="${mainY}" text-anchor="middle"
+          font-family="'Cinzel', serif" font-weight="500"
+          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="12"
+          filter="url(#goldGlow)">${escapeXml(main)}</text>
+
+    ${script ? `<text x="${cx}" y="${scriptY}" text-anchor="middle"
+          font-family="'Allura', cursive" font-weight="400"
           fill="url(#goldGrad)" font-size="${scriptSize}"
           filter="url(#goldGlow)">${escapeXml(script)}</text>` : ""}
 
     <!-- Decorative gold rule + small crown -->
-    <line x1="${cx - 220}" y1="430" x2="${cx - 60}" y2="430" stroke="url(#goldLine)" stroke-width="1"/>
-    <line x1="${cx + 60}"  y1="430" x2="${cx + 220}" y2="430" stroke="url(#goldLine)" stroke-width="1"/>
-    <g transform="translate(${cx - 28} 410)" fill="url(#goldGrad)" opacity="0.95">
+    <line x1="${cx - 220}" y1="${ruleY}" x2="${cx - 60}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
+    <line x1="${cx + 60}"  y1="${ruleY}" x2="${cx + 220}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
+    <g transform="translate(${cx - 28} ${ruleY - 20})" fill="url(#goldGrad)" opacity="0.95">
       <path d="M0 26 L9 7 L19 19 L28 0 L37 19 L47 7 L56 26 L50 33 L6 33 Z"/>
       <rect x="2" y="35" width="52" height="3" rx="1.5"/>
     </g>
   </g>
+
 
   <!-- Floor light + subject shadow -->
   <ellipse cx="${cx}" cy="${iy + ih - 20}" rx="${iw * 0.5}" ry="60" fill="url(#floorPool)"/>
