@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildPosterSVG, DEFAULT_POSTER, type PosterData } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
+import { removeImageBackground, fileToDataUrl } from "@/lib/bg-remove";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,12 +31,21 @@ function Index() {
   const update = (k: keyof PosterData) => (e: ChangeEvent<HTMLInputElement>) =>
     setData((d) => ({ ...d, [k]: e.target.value }));
 
-  const onUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const onUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => setData((d) => ({ ...d, choirImage: reader.result as string }));
-    reader.readAsDataURL(f);
+    // Show original immediately for fast feedback
+    setBusy("Removing background…");
+    try {
+      const original = await fileToDataUrl(f);
+      setData((d) => ({ ...d, choirImage: original }));
+      const cleaned = await removeImageBackground(f);
+      setData((d) => ({ ...d, choirImage: cleaned }));
+    } catch (err) {
+      console.error("Background removal failed", err);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const run = async (label: string, fn: () => Promise<void>) => {
@@ -64,6 +74,11 @@ function Index() {
                 onChange={onUpload}
                 className="bg-[#0f0703] border-[#3a2410] text-[#e2c89a] file:text-[#c9a878]"
               />
+              <p className="text-xs text-[#8a6a48]">
+                {busy === "Removing background…"
+                  ? "Removing background, this may take a few seconds…"
+                  : "Background is removed automatically for a clean composite."}
+              </p>
             </div>
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />

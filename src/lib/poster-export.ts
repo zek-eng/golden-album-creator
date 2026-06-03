@@ -1,8 +1,9 @@
 import { jsPDF } from "jspdf";
+import { POSTER_W, POSTER_H } from "./poster-svg";
 
-const WIDTH = 744;
-const HEIGHT = 1052;
-const SCALE = 2.5; // export resolution multiplier
+const WIDTH = POSTER_W;
+const HEIGHT = POSTER_H;
+const SCALE = 2; // export resolution multiplier
 
 async function svgToCanvas(svg: string, scale = SCALE): Promise<HTMLCanvasElement> {
   // Inline Google font CSS into SVG so rasterization picks up fonts
