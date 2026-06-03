@@ -136,7 +136,7 @@ function Index() {
                 src={svgDataUrl}
                 alt="Poster preview"
                 className="h-auto w-full rounded shadow-2xl"
-                style={{ aspectRatio: "1080 / 1528" }}
+                style={{ aspectRatio: "1080 / 1620" }}
               />
             </div>
           </section>
