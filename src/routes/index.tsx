@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildPosterSVG, DEFAULT_POSTER, type PosterData } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
+import { removeImageBackground, fileToDataUrl } from "@/lib/bg-remove";
 
 export const Route = createFileRoute("/")({
   head: () => ({
