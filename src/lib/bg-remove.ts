@@ -1,9 +1,18 @@
-import { removeBackground } from "@imgly/background-removal";
+import { removeBackground, type Config } from "@imgly/background-removal";
+
+const config: Config = {
+  debug: false,
+  device: "cpu",
+  model: "isnet_fp16",
+  output: { format: "image/png", quality: 1 },
+  progress: (key, current, total) => {
+    // eslint-disable-next-line no-console
+    console.log(`[bg-remove] ${key} ${current}/${total}`);
+  },
+};
 
 export async function removeImageBackground(file: File | Blob): Promise<string> {
-  const blob = await removeBackground(file, {
-    output: { format: "image/png", quality: 1 },
-  });
+  const blob = await removeBackground(file, config);
   return blobToDataUrl(blob);
 }
 
