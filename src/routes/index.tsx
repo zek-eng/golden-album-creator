@@ -117,6 +117,7 @@ function Index() {
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
             <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
+            <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
 
             <div className="pt-2">
               <p className="mb-2 text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
