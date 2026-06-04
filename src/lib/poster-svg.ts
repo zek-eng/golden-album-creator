@@ -17,9 +17,10 @@ export interface PosterData {
   bgOffsetX?: number;   // -300..300 px shift
   bgOffsetY?: number;   // -300..300 px shift
   bgScale?: number;     // 1..1.6
-  bgBlurMode?: GradientMode;
-  bgOpacityMode?: GradientMode;
-  bgOverlayMode?: GradientMode;
+  // Each effect can apply to any combination of regions independently.
+  bgBlurRegions?: GradientMode[];
+  bgOpacityRegions?: GradientMode[];
+  bgOverlayRegions?: GradientMode[];
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -37,19 +38,19 @@ export const DEFAULT_POSTER: PosterData = {
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
-  bgBlurMode: "full",
-  bgOpacityMode: "full",
-  bgOverlayMode: "full",
+  bgBlurRegions: ["full"],
+  bgOpacityRegions: ["full"],
+  bgOverlayRegions: ["full"],
 };
 
 // Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1620;
+export const POSTER_H = 1560;
 
 // Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 320,
+  y: 280,
   w: POSTER_W - 140, // 940
   h: 720,
 };
@@ -192,16 +193,16 @@ export function buildPosterSVG(data: PosterData): string {
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
   // Title (tighter top spacing toward image)
-  const prefixY = 110;
-  const mainY = prefix ? prefixY + mainSize + 24 : 170;
+  const prefixY = 80;
+  const mainY = prefix ? prefixY + mainSize + 16 : 130;
   // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
   const tzCardW = Math.max(140, scriptSize * 3.6);
   const tzCardH = Math.round(scriptSize * 1.9);
   const tzCardX = cx - tzCardW / 2;
-  const tzCardY = mainY + 30;
+  const tzCardY = mainY + 20;
   const tzCardR = 18;
   const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
-  const ruleY = tzCardY + tzCardH + 28;
+  const ruleY = tzCardY + tzCardH + 18;
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
   const metalStops = theme.metal.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
@@ -415,78 +416,60 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const h = POSTER_H * scale;
   const x = (POSTER_W - w) / 2 + ox;
   const y = (POSTER_H - h) / 2 + oy;
-  const blurMode = data.bgBlurMode ?? "full";
-  const opacityMode = data.bgOpacityMode ?? "full";
-  const overlayMode = data.bgOverlayMode ?? "full";
+  const blurRegions = normalizeRegions(data.bgBlurRegions);
+  const opacityRegions = normalizeRegions(data.bgOpacityRegions);
+  const overlayRegions = normalizeRegions(data.bgOverlayRegions);
   const blur = Math.max(0, data.bgBlur ?? 10);
 
   const imgAttrs = `href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"`;
 
-  // Region gradient: white (visible) inside chosen region, black outside.
-  // For "full" mode, no region mask needed.
-  const regionGradient = (id: string, mode: "top" | "bottom") => {
-    const stops = mode === "top"
+  let defs = "";
+  let uid = 0;
+  const nextId = (prefix: string) => `${prefix}_${++uid}`;
+
+  // Builds a soft gradient mask for a single region (full/top/bottom).
+  // Returns mask id, registers needed gradient + mask in defs.
+  const buildRegionMask = (region: GradientMode): string | null => {
+    if (region === "full") return null;
+    const gradId = nextId("regGrad");
+    const maskId = nextId("regMask");
+    const stops = region === "top"
       ? `<stop offset="0%" stop-color="#fff"/><stop offset="50%" stop-color="#fff"/><stop offset="70%" stop-color="#000"/><stop offset="100%" stop-color="#000"/>`
       : `<stop offset="0%" stop-color="#000"/><stop offset="30%" stop-color="#000"/><stop offset="50%" stop-color="#fff"/><stop offset="100%" stop-color="#fff"/>`;
-    return `<linearGradient id="${id}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
+    defs += `<linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
+    defs += `<mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${POSTER_W}" height="${POSTER_H}"><rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${gradId})"/></mask>`;
+    return maskId;
   };
 
-  let defs = "";
-
-  // --- Independent opacity layer ---
-  // Sharp image rendered at full opacity always; opacity reduction applied via
-  // a fade-to-background rect over the chosen region (or whole poster).
-  let opacityFadeLayer = "";
-  const fade = 1 - opacity; // amount of bg to mix in
-  if (fade > 0.001) {
-    if (opacityMode === "full") {
-      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.base}" opacity="${fade}"/>`;
-    } else {
-      const gid = `bgOpFade_${opacityMode}`;
-      const stops = opacityMode === "top"
-        ? `<stop offset="0%" stop-color="${theme.base}" stop-opacity="${fade}"/>
-           <stop offset="50%" stop-color="${theme.base}" stop-opacity="${fade}"/>
-           <stop offset="80%" stop-color="${theme.base}" stop-opacity="0"/>
-           <stop offset="100%" stop-color="${theme.base}" stop-opacity="0"/>`
-        : `<stop offset="0%" stop-color="${theme.base}" stop-opacity="0"/>
-           <stop offset="20%" stop-color="${theme.base}" stop-opacity="0"/>
-           <stop offset="50%" stop-color="${theme.base}" stop-opacity="${fade}"/>
-           <stop offset="100%" stop-color="${theme.base}" stop-opacity="${fade}"/>`;
-      defs += `<linearGradient id="${gid}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
-      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${gid})"/>`;
-    }
-  }
-
-  // --- Independent blur layer ---
+  // --- Independent blur layers (one per active region) ---
   let blurLayer = "";
   if (blur > 0) {
-    if (blurMode === "full") {
-      blurLayer = `<image ${imgAttrs} filter="url(#natureBlur)"/>`;
-    } else {
-      const blurMaskId = `bgBlurMask_${blurMode}`;
-      defs += regionGradient(`${blurMaskId}_grad`, blurMode as "top" | "bottom");
-      defs += `<mask id="${blurMaskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${POSTER_W}" height="${POSTER_H}">
-        <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${blurMaskId}_grad)"/>
-      </mask>`;
-      blurLayer = `<image ${imgAttrs} filter="url(#natureBlur)" mask="url(#${blurMaskId})"/>`;
+    for (const region of blurRegions) {
+      const maskId = buildRegionMask(region);
+      blurLayer += maskId
+        ? `<image ${imgAttrs} filter="url(#natureBlur)" mask="url(#${maskId})"/>`
+        : `<image ${imgAttrs} filter="url(#natureBlur)"/>`;
     }
   }
 
-  // --- Independent overlay layer ---
-  let overlayLayer: string;
-  if (overlayMode === "full") {
-    overlayLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.natureOverlay}" opacity="${overlay}"/>`;
-  } else {
-    const gradId = `bgOverlayGrad_${overlayMode}`;
-    const stops = overlayMode === "top"
-      ? `<stop offset="0%" stop-color="${theme.natureOverlay}" stop-opacity="${overlay}"/>
-         <stop offset="60%" stop-color="${theme.natureOverlay}" stop-opacity="0"/>
-         <stop offset="100%" stop-color="${theme.natureOverlay}" stop-opacity="0"/>`
-      : `<stop offset="0%" stop-color="${theme.natureOverlay}" stop-opacity="0"/>
-         <stop offset="40%" stop-color="${theme.natureOverlay}" stop-opacity="0"/>
-         <stop offset="100%" stop-color="${theme.natureOverlay}" stop-opacity="${overlay}"/>`;
-    defs += `<linearGradient id="${gradId}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
-    overlayLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${gradId})"/>`;
+  // --- Independent opacity-fade layers ---
+  let opacityFadeLayer = "";
+  const fade = 1 - opacity;
+  if (fade > 0.001) {
+    for (const region of opacityRegions) {
+      const maskId = buildRegionMask(region);
+      const rect = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.base}" opacity="${fade}"${maskId ? ` mask="url(#${maskId})"` : ""}/>`;
+      opacityFadeLayer += rect;
+    }
+  }
+
+  // --- Independent overlay layers ---
+  let overlayLayer = "";
+  if (overlay > 0.001) {
+    for (const region of overlayRegions) {
+      const maskId = buildRegionMask(region);
+      overlayLayer += `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.natureOverlay}" opacity="${overlay}"${maskId ? ` mask="url(#${maskId})"` : ""}/>`;
+    }
   }
 
   return `
@@ -498,6 +481,17 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
       ${overlayLayer}
     </g>
   `;
+}
+
+function normalizeRegions(r: GradientMode[] | undefined): GradientMode[] {
+  if (!r || r.length === 0) return ["full"];
+  // dedupe while preserving order
+  const seen = new Set<GradientMode>();
+  const out: GradientMode[] = [];
+  for (const v of r) {
+    if (!seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return out;
 }
 
 function escapeXml(s: string): string {
