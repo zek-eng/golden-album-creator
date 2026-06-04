@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme } from "@/lib/poster-svg";
+import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme, type GradientMode } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
 import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
@@ -204,10 +204,19 @@ function Index() {
 
               <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
                 onChange={setNum("bgBlur")} />
+              <ModeRow label="Blur area" value={data.bgBlurMode ?? "full"}
+                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgBlurMode: m }))} />
+
               <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
+              <ModeRow label="Opacity area" value={data.bgOpacityMode ?? "full"}
+                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgOpacityMode: m }))} />
+
               <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
+              <ModeRow label="Overlay area" value={data.bgOverlayMode ?? "full"}
+                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgOverlayMode: m }))} />
+
               <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
                 onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
               <SliderRow label="Offset X" value={data.bgOffsetX ?? 0} min={-300} max={300} step={5}
@@ -260,6 +269,37 @@ function SliderRow({ label, value, min, max, step, onChange, suffix }: {
         <span className="text-[#c9a878]">{value}{suffix ?? ""}</span>
       </div>
       <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} />
+    </div>
+  );
+}
+
+
+function ModeRow({ label, value, onChange }: {
+  label: string; value: GradientMode; onChange: (m: GradientMode) => void;
+}) {
+  const opts: { id: GradientMode; label: string }[] = [
+    { id: "full", label: "Full" },
+    { id: "top", label: "Top" },
+    { id: "bottom", label: "Bottom" },
+  ];
+  return (
+    <div className="space-y-1">
+      <div className="text-[11px] text-[#8a6a48]">{label}</div>
+      <div className="grid grid-cols-3 gap-1">
+        {opts.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => onChange(o.id)}
+            className={`rounded border px-2 py-1 text-[10px] transition ${
+              value === o.id
+                ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
