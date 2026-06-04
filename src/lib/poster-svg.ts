@@ -351,6 +351,17 @@ export function buildPosterSVG(data: PosterData): string {
     <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
       <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 10)}"/>
     </filter>
+
+    <linearGradient id="textScrimTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.6"/>
+      <stop offset="60%"  stop-color="#000" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="textScrimBottom" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.7"/>
+      <stop offset="55%"  stop-color="#000" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
   </defs>
 
   <!-- BACKGROUND -->
@@ -374,6 +385,13 @@ export function buildPosterSVG(data: PosterData): string {
 
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
         stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
+
+  ${data.bgImage ? `
+  <!-- TEXT LEGIBILITY SCRIMS -->
+  <rect x="0" y="0" width="${POSTER_W}" height="${Math.max(260, ruleY + 30)}" fill="url(#textScrimTop)"/>
+  <rect x="0" y="${newAlbumY - 60}" width="${POSTER_W}" height="${POSTER_H - (newAlbumY - 60)}" fill="url(#textScrimBottom)"/>
+  ` : ""}
+
 
   <!-- TITLE BLOCK -->
   <g id="title">
