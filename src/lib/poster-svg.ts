@@ -152,10 +152,10 @@ function splitName(name: string) {
 }
 
 export function buildPosterSVG(data: PosterData): string {
-  const theme = THEMES[data.theme ?? "royal"];
+  const theme = THEMES[data.theme ?? "milk"];
   const { prefix, main, script } = splitName(data.choirName);
   const mainLen = main.length || 1;
-  const mainSize = Math.min(132, Math.max(64, Math.floor(940 / Math.max(mainLen, 5) * 1.55)));
+  const mainSize = Math.min(112, Math.max(54, Math.floor(940 / Math.max(mainLen, 5) * 1.35)));
   const scriptSize = Math.round(mainSize * 0.55);
 
   const { x: ix, y: iy, w: iw, h: ih } = IMAGE_AREA;
