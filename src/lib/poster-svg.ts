@@ -17,9 +17,10 @@ export interface PosterData {
   bgOffsetX?: number;   // -300..300 px shift
   bgOffsetY?: number;   // -300..300 px shift
   bgScale?: number;     // 1..1.6
-  bgBlurMode?: GradientMode;
-  bgOpacityMode?: GradientMode;
-  bgOverlayMode?: GradientMode;
+  // Each effect can apply to any combination of regions independently.
+  bgBlurRegions?: GradientMode[];
+  bgOpacityRegions?: GradientMode[];
+  bgOverlayRegions?: GradientMode[];
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -37,14 +38,14 @@ export const DEFAULT_POSTER: PosterData = {
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
-  bgBlurMode: "full",
-  bgOpacityMode: "full",
-  bgOverlayMode: "full",
+  bgBlurRegions: ["full"],
+  bgOpacityRegions: ["full"],
+  bgOverlayRegions: ["full"],
 };
 
 // Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1620;
+export const POSTER_H = 1560;
 
 // Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
