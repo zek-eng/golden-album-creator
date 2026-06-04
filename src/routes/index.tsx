@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useRef, useEffect, type ChangeEvent } from "react";
+import { useMemo, useState, useRef, useEffect, type ChangeEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Settings2 } from "lucide-react";
 import { buildPosterSVG, DEFAULT_POSTER, FONT_OPTIONS, type PosterData, type PosterTheme, type GradientMode, type FontFamily } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
@@ -111,185 +115,249 @@ function Index() {
 
   const canExport = !!processedImage && !busy;
 
+  // ============ Grouped tool panels ============
+
+  const ImagePanel = (
+    <Section>
+      <div className="space-y-2">
+        <Label htmlFor="img" className="text-[#c9a878]">Choir Image</Label>
+        <Input
+          id="img" ref={fileRef} type="file" accept="image/*"
+          onChange={onUpload}
+          className="bg-[#0f0703] border-[#3a2410] text-[#e2c89a] file:text-[#c9a878]"
+        />
+        <p className="text-xs text-[#8a6a48]">
+          {busy ?? (processedImage ? "Background removed. Ready to export." : "")}
+        </p>
+        {bgError && <p className="text-xs text-red-400">{bgError}</p>}
+      </div>
+
+      {(originalImage || processedImage) && (
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-widest text-[#a87a42]">Debug — BG Removal</p>
+          <div className="grid grid-cols-2 gap-2">
+            <DebugTile label="Original" src={originalImage} checker={false} />
+            <DebugTile label="Transparent" src={processedImage} checker />
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+        <p className="text-xs uppercase tracking-widest text-[#a87a42]">Position & Scale</p>
+        <SliderRow label="Scale" value={Math.round((data.imgScale ?? 1) * 100)} min={40} max={200} step={2}
+          onChange={(v) => setData((d) => ({ ...d, imgScale: v[0] / 100 }))} suffix="%" />
+        <SliderRow label="Offset X" value={data.imgOffsetX ?? 0} min={-400} max={400} step={2}
+          onChange={setNum("imgOffsetX")} />
+        <SliderRow label="Offset Y" value={data.imgOffsetY ?? 0} min={-400} max={400} step={2}
+          onChange={setNum("imgOffsetY")} />
+        <button
+          onClick={() => setData((d) => ({ ...d, imgScale: 1, imgOffsetX: 0, imgOffsetY: 0 }))}
+          className="w-full rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-[11px] text-[#c9a878] hover:border-[#a87a42]"
+        >
+          Reset position
+        </button>
+      </div>
+    </Section>
+  );
+
+  const BackdropPanel = (
+    <Section>
+      <div className="space-y-2 rounded-md border border-[#3a2410] bg-black/30 p-3">
+        <p className="text-xs uppercase tracking-widest text-[#a87a42]">Template</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {([
+            { id: "milk" as PosterTheme, label: "Milk Cream" },
+            { id: "ocean" as PosterTheme, label: "Ocean & Sky" },
+          ]).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setData((d) => ({ ...d, theme: t.id }))}
+              className={`rounded border px-2 py-1.5 text-[11px] leading-tight transition ${
+                (data.theme ?? "milk") === t.id
+                  ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                  : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Accordion type="multiple" className="space-y-2">
+        <ToolGroup value="bg-preset" title="Backdrop Image">
+          <div className="grid grid-cols-2 gap-1.5">
+            {BG_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => applyPreset(p.id)}
+                className={`rounded border px-2 py-1.5 text-left text-[11px] leading-tight transition ${
+                  activeBg === p.id
+                    ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                    : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setData((d) => ({ ...d, bgImage: "" }))}
+              className="rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-left text-[11px] text-[#8a6a48] hover:border-[#a87a42]"
+            >
+              None
+            </button>
+          </div>
+          <div className="space-y-1 pt-2">
+            <Label className="text-[11px] text-[#8a6a48]">Custom backdrop</Label>
+            <Input type="file" accept="image/*" onChange={onBgUpload}
+              className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
+          </div>
+        </ToolGroup>
+
+        <ToolGroup value="bg-blur" title="Blur">
+          <SliderRow label="Amount" value={data.bgBlur ?? 10} min={0} max={40} step={1}
+            onChange={setNum("bgBlur")} />
+          <ModeRow label="Apply to" value={data.bgBlurRegions ?? ["full"]}
+            onChange={(r) => setData((d) => ({ ...d, bgBlurRegions: r }))} />
+        </ToolGroup>
+
+        <ToolGroup value="bg-opacity" title="Opacity">
+          <SliderRow label="Amount" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
+            onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
+          <ModeRow label="Apply to" value={data.bgOpacityRegions ?? ["full"]}
+            onChange={(r) => setData((d) => ({ ...d, bgOpacityRegions: r }))} />
+        </ToolGroup>
+
+        <ToolGroup value="bg-overlay" title="Overlay Darkness">
+          <SliderRow label="Amount" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
+            onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
+          <ModeRow label="Apply to" value={data.bgOverlayRegions ?? ["full"]}
+            onChange={(r) => setData((d) => ({ ...d, bgOverlayRegions: r }))} />
+        </ToolGroup>
+
+        <ToolGroup value="bg-transform" title="Backdrop Transform">
+          <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
+            onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
+          <SliderRow label="Offset X" value={data.bgOffsetX ?? 0} min={-300} max={300} step={5}
+            onChange={setNum("bgOffsetX")} />
+          <SliderRow label="Offset Y" value={data.bgOffsetY ?? 0} min={-300} max={300} step={5}
+            onChange={setNum("bgOffsetY")} />
+        </ToolGroup>
+      </Accordion>
+    </Section>
+  );
+
+  const TextPanel = (
+    <Section>
+      <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
+      <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
+      <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
+      <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
+      <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
+    </Section>
+  );
+
+  const TypographyPanel = (
+    <Section>
+      <Accordion type="multiple" className="space-y-2">
+        <ToolGroup value="t-title" title="Title (Choir name)">
+          <FontRow font={data.titleFont ?? "Cinzel"} size={data.titleSize ?? 0}
+            onFont={(f) => setData((d) => ({ ...d, titleFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, titleSize: s }))}
+            min={18} max={120} placeholder="auto" />
+        </ToolGroup>
+        <ToolGroup value="t-script" title="Script (last word)">
+          <FontRow font={data.scriptFont ?? "Cinzel"} size={data.scriptSize ?? 0}
+            onFont={(f) => setData((d) => ({ ...d, scriptFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, scriptSize: s }))}
+            min={14} max={100} placeholder="auto" />
+        </ToolGroup>
+        <ToolGroup value="t-album" title="Album title">
+          <FontRow font={data.albumFont ?? "Cinzel"} size={data.albumSize ?? 44}
+            onFont={(f) => setData((d) => ({ ...d, albumFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, albumSize: s }))}
+            min={16} max={90} />
+        </ToolGroup>
+        <ToolGroup value="t-newalbum" title="New album text">
+          <FontRow font={data.newAlbumFont ?? "Cinzel"} size={data.newAlbumSize ?? 22}
+            onFont={(f) => setData((d) => ({ ...d, newAlbumFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, newAlbumSize: s }))}
+            min={10} max={60} />
+        </ToolGroup>
+        <ToolGroup value="t-coming" title="Coming soon">
+          <FontRow font={data.comingSoonFont ?? "Cinzel"} size={data.comingSoonSize ?? 54}
+            onFont={(f) => setData((d) => ({ ...d, comingSoonFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, comingSoonSize: s }))}
+            min={18} max={120} />
+        </ToolGroup>
+        <ToolGroup value="t-social" title="Social handle">
+          <FontRow font={data.socialFont ?? "Cinzel"} size={data.socialSize ?? 20}
+            onFont={(f) => setData((d) => ({ ...d, socialFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, socialSize: s }))}
+            min={10} max={48} />
+        </ToolGroup>
+      </Accordion>
+    </Section>
+  );
+
+  const ExportPanel = (
+    <Section>
+      <p className="text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
+      <div className="grid grid-cols-2 gap-2">
+        <DlBtn busy={busy} disabled={!canExport} label="PNG" onClick={() => run("PNG", () => downloadRaster(svg, "png", "poster.png"))} />
+        <DlBtn busy={busy} disabled={!canExport} label="JPG" onClick={() => run("JPG", () => downloadRaster(svg, "jpg", "poster.jpg"))} />
+        <DlBtn busy={busy} disabled={!canExport} label="SVG" onClick={() => run("SVG", () => downloadSVG(svg))} />
+        <DlBtn busy={busy} disabled={!canExport} label="PDF" onClick={() => run("PDF", () => downloadPDF(svg))} />
+      </div>
+    </Section>
+  );
+
+  const ToolTabs = (
+    <Tabs defaultValue="image" className="w-full">
+      <TabsList className="grid w-full grid-cols-5 bg-[#0f0703] border border-[#3a2410] h-auto">
+        <TabsTrigger value="image" className="text-[11px] data-[state=active]:bg-[#2a1608] data-[state=active]:text-[#f3d28a]">Image</TabsTrigger>
+        <TabsTrigger value="bg" className="text-[11px] data-[state=active]:bg-[#2a1608] data-[state=active]:text-[#f3d28a]">Backdrop</TabsTrigger>
+        <TabsTrigger value="text" className="text-[11px] data-[state=active]:bg-[#2a1608] data-[state=active]:text-[#f3d28a]">Text</TabsTrigger>
+        <TabsTrigger value="type" className="text-[11px] data-[state=active]:bg-[#2a1608] data-[state=active]:text-[#f3d28a]">Fonts</TabsTrigger>
+        <TabsTrigger value="export" className="text-[11px] data-[state=active]:bg-[#2a1608] data-[state=active]:text-[#f3d28a]">Export</TabsTrigger>
+      </TabsList>
+      <TabsContent value="image" className="mt-3">{ImagePanel}</TabsContent>
+      <TabsContent value="bg" className="mt-3">{BackdropPanel}</TabsContent>
+      <TabsContent value="text" className="mt-3">{TextPanel}</TabsContent>
+      <TabsContent value="type" className="mt-3">{TypographyPanel}</TabsContent>
+      <TabsContent value="export" className="mt-3">{ExportPanel}</TabsContent>
+    </Tabs>
+  );
+
   return (
     <div className="min-h-screen bg-[#120904] text-[#e2c89a]">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <header className="mb-8">
-          <h1 className="text-4xl tracking-wide" style={{ fontFamily: "Cormorant Garamond, serif" }}>
+      <header className="sticky top-0 z-20 border-b border-[#3a2410] bg-[#120904]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-6">
+          <h1 className="text-lg sm:text-2xl lg:text-3xl tracking-wide" style={{ fontFamily: "Cormorant Garamond, serif" }}>
             The Harmony Tz Poster Generator
           </h1>
-        </header>
+          {/* Mobile tools trigger */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="sm" className="lg:hidden bg-gradient-to-b from-[#e2b878] to-[#a87a42] text-[#1a0d05]">
+                <Settings2 className="mr-1 h-4 w-4" /> Tools
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[85vh] overflow-y-auto bg-[#1a0d05] border-t border-[#3a2410] text-[#e2c89a]">
+              <SheetHeader>
+                <SheetTitle className="text-[#f3d28a]" style={{ fontFamily: "Cormorant Garamond, serif" }}>Tools</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">{ToolTabs}</div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
 
-        <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
-          <aside className="space-y-5 rounded-lg border border-[#3a2410] bg-[#1a0d05]/60 p-6">
-            <div className="space-y-2">
-              <Label htmlFor="img" className="text-[#c9a878]">Choir Image</Label>
-              <Input
-                id="img" ref={fileRef} type="file" accept="image/*"
-                onChange={onUpload}
-                className="bg-[#0f0703] border-[#3a2410] text-[#e2c89a] file:text-[#c9a878]"
-              />
-              <p className="text-xs text-[#8a6a48]">
-                {busy ?? (processedImage ? "Background removed. Ready to export." : "")}
-              </p>
-              {bgError && <p className="text-xs text-red-400">{bgError}</p>}
-            </div>
-
-            {(originalImage || processedImage) && (
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-widest text-[#a87a42]">Debug — BG Removal</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <DebugTile label="Original" src={originalImage} checker={false} />
-                  <DebugTile label="Transparent" src={processedImage} checker />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2 rounded-md border border-[#3a2410] bg-black/30 p-3">
-              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Template</p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {([
-                  { id: "milk" as PosterTheme, label: "Milk Cream" },
-                  { id: "ocean" as PosterTheme, label: "Ocean & Sky" },
-                ]).map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setData((d) => ({ ...d, theme: t.id }))}
-                    className={`rounded border px-2 py-1.5 text-[11px] leading-tight transition ${
-                      (data.theme ?? "milk") === t.id
-                        ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
-                        : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
-              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Nature Backdrop</p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {BG_PRESETS.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => applyPreset(p.id)}
-                    className={`rounded border px-2 py-1.5 text-left text-[11px] leading-tight transition ${
-                      activeBg === p.id
-                        ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
-                        : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setData((d) => ({ ...d, bgImage: "" }))}
-                  className="rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-left text-[11px] text-[#8a6a48] hover:border-[#a87a42]"
-                >
-                  None
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-[11px] text-[#8a6a48]">Custom backdrop</Label>
-                <Input type="file" accept="image/*" onChange={onBgUpload}
-                  className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
-              </div>
-
-              <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
-                onChange={setNum("bgBlur")} />
-              <ModeRow label="Blur area" value={data.bgBlurRegions ?? ["full"]}
-                onChange={(r) => setData((d) => ({ ...d, bgBlurRegions: r }))} />
-
-              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
-                onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
-              <ModeRow label="Opacity area" value={data.bgOpacityRegions ?? ["full"]}
-                onChange={(r) => setData((d) => ({ ...d, bgOpacityRegions: r }))} />
-
-              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
-                onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
-              <ModeRow label="Overlay area" value={data.bgOverlayRegions ?? ["full"]}
-                onChange={(r) => setData((d) => ({ ...d, bgOverlayRegions: r }))} />
-
-              <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
-                onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
-              <SliderRow label="Offset X" value={data.bgOffsetX ?? 0} min={-300} max={300} step={5}
-                onChange={setNum("bgOffsetX")} />
-              <SliderRow label="Offset Y" value={data.bgOffsetY ?? 0} min={-300} max={300} step={5}
-                onChange={setNum("bgOffsetY")} />
-            </div>
-
-            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
-              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Choir Image Position</p>
-              <SliderRow label="Scale" value={Math.round((data.imgScale ?? 1) * 100)} min={40} max={200} step={2}
-                onChange={(v) => setData((d) => ({ ...d, imgScale: v[0] / 100 }))} suffix="%" />
-              <SliderRow label="Offset X" value={data.imgOffsetX ?? 0} min={-400} max={400} step={2}
-                onChange={setNum("imgOffsetX")} />
-              <SliderRow label="Offset Y" value={data.imgOffsetY ?? 0} min={-400} max={400} step={2}
-                onChange={setNum("imgOffsetY")} />
-              <button
-                onClick={() => setData((d) => ({ ...d, imgScale: 1, imgOffsetX: 0, imgOffsetY: 0 }))}
-                className="w-full rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-[11px] text-[#c9a878] hover:border-[#a87a42]"
-              >
-                Reset position
-              </button>
-            </div>
-
-            <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
-            <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
-            <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
-            <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
-            <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
-
-            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
-              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Typography</p>
-
-              <FontRow label="Title (Choir name)" font={data.titleFont ?? "Cinzel"} size={data.titleSize ?? 0}
-                onFont={(f) => setData((d) => ({ ...d, titleFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, titleSize: s }))}
-                min={18} max={120} placeholder="auto" />
-
-              <FontRow label="Script (last word)" font={data.scriptFont ?? "Cinzel"} size={data.scriptSize ?? 0}
-                onFont={(f) => setData((d) => ({ ...d, scriptFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, scriptSize: s }))}
-                min={14} max={100} placeholder="auto" />
-
-              <FontRow label="Album title" font={data.albumFont ?? "Cinzel"} size={data.albumSize ?? 44}
-                onFont={(f) => setData((d) => ({ ...d, albumFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, albumSize: s }))}
-                min={16} max={90} />
-
-              <FontRow label="New album text" font={data.newAlbumFont ?? "Cinzel"} size={data.newAlbumSize ?? 22}
-                onFont={(f) => setData((d) => ({ ...d, newAlbumFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, newAlbumSize: s }))}
-                min={10} max={60} />
-
-              <FontRow label="Coming soon" font={data.comingSoonFont ?? "Cinzel"} size={data.comingSoonSize ?? 54}
-                onFont={(f) => setData((d) => ({ ...d, comingSoonFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, comingSoonSize: s }))}
-                min={18} max={120} />
-
-              <FontRow label="Social handle" font={data.socialFont ?? "Cinzel"} size={data.socialSize ?? 20}
-                onFont={(f) => setData((d) => ({ ...d, socialFont: f }))}
-                onSize={(s) => setData((d) => ({ ...d, socialSize: s }))}
-                min={10} max={48} />
-            </div>
-
-
-            <div className="pt-2">
-              <p className="mb-2 text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
-              <div className="grid grid-cols-2 gap-2">
-                <DlBtn busy={busy} disabled={!canExport} label="PNG" onClick={() => run("PNG", () => downloadRaster(svg, "png", "poster.png"))} />
-                <DlBtn busy={busy} disabled={!canExport} label="JPG" onClick={() => run("JPG", () => downloadRaster(svg, "jpg", "poster.jpg"))} />
-                <DlBtn busy={busy} disabled={!canExport} label="SVG" onClick={() => run("SVG", () => downloadSVG(svg))} />
-                <DlBtn busy={busy} disabled={!canExport} label="PDF" onClick={() => run("PDF", () => downloadPDF(svg))} />
-              </div>
-            </div>
-          </aside>
-
-          <section className="rounded-lg border border-[#3a2410] bg-black/40 p-4">
-            <div className="mx-auto w-full max-w-[620px]">
+      <div className="mx-auto max-w-7xl px-4 py-4 lg:px-6 lg:py-8">
+        <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+          {/* Poster preview — primary on mobile */}
+          <section className="rounded-lg border border-[#3a2410] bg-black/40 p-3 lg:p-4 lg:order-1 order-1">
+            <div className="mx-auto w-full max-w-[560px]">
               <img
                 src={svgDataUrl}
                 alt="Poster preview"
@@ -298,9 +366,29 @@ function Index() {
               />
             </div>
           </section>
+
+          {/* Desktop side panel */}
+          <aside className="hidden lg:block rounded-lg border border-[#3a2410] bg-[#1a0d05]/60 p-4 lg:order-2">
+            {ToolTabs}
+          </aside>
         </div>
       </div>
     </div>
+  );
+}
+
+function Section({ children }: { children: ReactNode }) {
+  return <div className="space-y-4">{children}</div>;
+}
+
+function ToolGroup({ value, title, children }: { value: string; title: string; children: ReactNode }) {
+  return (
+    <AccordionItem value={value} className="rounded-md border border-[#3a2410] bg-black/30 px-3">
+      <AccordionTrigger className="py-2 text-[12px] uppercase tracking-widest text-[#a87a42] hover:no-underline">
+        {title}
+      </AccordionTrigger>
+      <AccordionContent className="space-y-3 pb-3">{children}</AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -405,14 +493,13 @@ function DlBtn({ label, onClick, busy, disabled }: { label: string; onClick: () 
   );
 }
 
-function FontRow({ label, font, size, onFont, onSize, min, max, placeholder }: {
-  label: string; font: FontFamily; size: number;
+function FontRow({ font, size, onFont, onSize, min, max, placeholder }: {
+  font: FontFamily; size: number;
   onFont: (f: FontFamily) => void; onSize: (s: number) => void;
   min: number; max: number; placeholder?: string;
 }) {
   return (
-    <div className="space-y-1.5 border-t border-[#3a2410]/60 pt-2 first:border-0 first:pt-0">
-      <div className="text-[11px] text-[#c9a878]">{label}</div>
+    <div className="space-y-1.5">
       <div className="flex gap-1.5">
         <select
           value={font}
