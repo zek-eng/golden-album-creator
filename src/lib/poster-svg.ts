@@ -199,7 +199,7 @@ export function buildPosterSVG(data: PosterData): string {
   <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
   <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
     <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
-          font-family="'Allura', cursive" font-size="460"
+          font-family="'Pinyon Script', 'Italianno', cursive" font-style="italic" font-size="500"
           fill="url(#goldGrad)" letter-spacing="6">${escapeXml(main || "Harmony")}</text>
   </g>
 
