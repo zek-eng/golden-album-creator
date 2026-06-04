@@ -335,6 +335,27 @@ function socialBlock(handle: string): string {
   `;
 }
 
+function renderNatureBackdrop(data: PosterData): string {
+  const opacityRaw = data.bgOpacity ?? 0.1;
+  const opacity = Math.min(0.15, Math.max(0.05, opacityRaw));
+  const overlay = Math.min(1, Math.max(0, data.bgOverlay ?? 0.65));
+  const scale = Math.min(1.6, Math.max(1, data.bgScale ?? 1.1));
+  const ox = data.bgOffsetX ?? 0;
+  const oy = data.bgOffsetY ?? 0;
+  const w = POSTER_W * scale;
+  const h = POSTER_H * scale;
+  const x = (POSTER_W - w) / 2 + ox;
+  const y = (POSTER_H - h) / 2 + oy;
+  return `
+    <g id="nature_backdrop">
+      <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
+             preserveAspectRatio="xMidYMid slice"
+             opacity="${opacity}" filter="url(#natureBlur)"/>
+      <rect width="${POSTER_W}" height="${POSTER_H}" fill="#0a0402" opacity="${overlay}"/>
+    </g>
+  `;
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
