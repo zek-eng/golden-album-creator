@@ -25,7 +25,7 @@ export const DEFAULT_POSTER: PosterData = {
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
   socialHandle: "The_HarmonyTz",
-  theme: "royal",
+  theme: "milk",
   bgImage: "",
   bgBlur: 10,
   bgOpacity: 0.45,
