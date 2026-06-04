@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { buildPosterSVG, DEFAULT_POSTER, type PosterData } from "@/lib/poster-svg";
+import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
 import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
@@ -150,6 +150,28 @@ function Index() {
               </div>
             )}
 
+            <div className="space-y-2 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Template</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {([
+                  { id: "royal" as PosterTheme, label: "Royal Gold" },
+                  { id: "ocean" as PosterTheme, label: "Ocean & Sky" },
+                ]).map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setData((d) => ({ ...d, theme: t.id }))}
+                    className={`rounded border px-2 py-1.5 text-[11px] leading-tight transition ${
+                      (data.theme ?? "royal") === t.id
+                        ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                        : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
               <p className="text-xs uppercase tracking-widest text-[#a87a42]">Nature Backdrop</p>
               <div className="grid grid-cols-2 gap-1.5">
@@ -180,11 +202,11 @@ function Index() {
                   className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
               </div>
 
-              <SliderRow label="Blur" value={data.bgBlur ?? 14} min={0} max={40} step={1}
+              <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
                 onChange={setNum("bgBlur")} />
-              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.1) * 100)} min={5} max={15} step={1}
+              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
-              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.65) * 100)} min={0} max={95} step={1}
+              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
               <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
                 onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
