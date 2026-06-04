@@ -150,6 +150,50 @@ function Index() {
               </div>
             )}
 
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Nature Backdrop</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {BG_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => applyPreset(p.id)}
+                    className={`rounded border px-2 py-1.5 text-left text-[11px] leading-tight transition ${
+                      activeBg === p.id
+                        ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                        : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setData((d) => ({ ...d, bgImage: "" }))}
+                  className="rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-left text-[11px] text-[#8a6a48] hover:border-[#a87a42]"
+                >
+                  None
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-[#8a6a48]">Custom backdrop</Label>
+                <Input type="file" accept="image/*" onChange={onBgUpload}
+                  className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
+              </div>
+
+              <SliderRow label="Blur" value={data.bgBlur ?? 14} min={0} max={40} step={1}
+                onChange={setNum("bgBlur")} />
+              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.1) * 100)} min={5} max={15} step={1}
+                onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.65) * 100)} min={0} max={95} step={1}
+                onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
+                onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Offset X" value={data.bgOffsetX ?? 0} min={-300} max={300} step={5}
+                onChange={setNum("bgOffsetX")} />
+              <SliderRow label="Offset Y" value={data.bgOffsetY ?? 0} min={-300} max={300} step={5}
+                onChange={setNum("bgOffsetY")} />
+            </div>
+
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
