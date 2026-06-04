@@ -1,4 +1,5 @@
 export type PosterTheme = "milk" | "ocean";
+export type GradientMode = "full" | "top" | "bottom";
 
 export interface PosterData {
   choirImage: string; // transparent PNG (background removed)
@@ -16,6 +17,9 @@ export interface PosterData {
   bgOffsetX?: number;   // -300..300 px shift
   bgOffsetY?: number;   // -300..300 px shift
   bgScale?: number;     // 1..1.6
+  bgBlurMode?: GradientMode;
+  bgOpacityMode?: GradientMode;
+  bgOverlayMode?: GradientMode;
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -33,6 +37,9 @@ export const DEFAULT_POSTER: PosterData = {
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
+  bgBlurMode: "full",
+  bgOpacityMode: "full",
+  bgOverlayMode: "full",
 };
 
 // Poster canvas
