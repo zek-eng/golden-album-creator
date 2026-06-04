@@ -27,9 +27,9 @@ export const DEFAULT_POSTER: PosterData = {
   socialHandle: "The_HarmonyTz",
   theme: "royal",
   bgImage: "",
-  bgBlur: 10,
-  bgOpacity: 0.45,
-  bgOverlay: 0.35,
+  bgBlur: 8,
+  bgOpacity: 0.78,
+  bgOverlay: 0.14,
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
@@ -265,7 +265,7 @@ export function buildPosterSVG(data: PosterData): string {
 
     <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">${frameStops}</linearGradient>
 
-    <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
+    <filter id="natureBlur" x="-140" y="-140" width="1360" height="2000" filterUnits="userSpaceOnUse">
       <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 10)}"/>
     </filter>
   </defs>
@@ -381,9 +381,10 @@ function socialBlock(handle: string): string {
 }
 
 function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
-  const opacity = Math.min(1, Math.max(0, data.bgOpacity ?? 0.45));
-  const overlay = Math.min(1, Math.max(0, data.bgOverlay ?? 0.35));
+  const opacity = Math.min(0.95, Math.max(0.28, data.bgOpacity ?? 0.78));
+  const overlay = Math.min(0.65, Math.max(0, data.bgOverlay ?? 0.14));
   const scale = Math.min(1.6, Math.max(1, data.bgScale ?? 1.1));
+  const clearLayerOpacity = Math.min(0.24, opacity * 0.34);
   const ox = data.bgOffsetX ?? 0;
   const oy = data.bgOffsetY ?? 0;
   const w = POSTER_W * scale;
@@ -392,6 +393,9 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const y = (POSTER_H - h) / 2 + oy;
   return `
     <g id="nature_backdrop">
+      <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
+             preserveAspectRatio="xMidYMid slice"
+              opacity="${clearLayerOpacity}"/>
       <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
              preserveAspectRatio="xMidYMid slice"
              opacity="${opacity}" filter="url(#natureBlur)"/>
