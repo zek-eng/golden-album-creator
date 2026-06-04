@@ -20,12 +20,12 @@ export const DEFAULT_POSTER: PosterData = {
 export const POSTER_W = 1080;
 export const POSTER_H = 1720;
 
-// Choir image area — tightened gap from heading above
+// Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 460,
+  y: 380,
   w: POSTER_W - 140, // 940
-  h: 720,
+  h: 760,
 };
 
 /**
