@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme, type GradientMode } from "@/lib/poster-svg";
+import { buildPosterSVG, DEFAULT_POSTER, FONT_OPTIONS, type PosterData, type PosterTheme, type GradientMode, type FontFamily } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
 import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
