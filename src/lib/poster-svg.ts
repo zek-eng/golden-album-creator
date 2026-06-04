@@ -191,9 +191,9 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title (more breathing space)
-  const prefixY = 170;
-  const mainY = prefix ? prefixY + mainSize + 28 : 230;
+  // Title (tighter top spacing toward image)
+  const prefixY = 110;
+  const mainY = prefix ? prefixY + mainSize + 24 : 170;
   // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
   const tzCardW = Math.max(140, scriptSize * 3.6);
   const tzCardH = Math.round(scriptSize * 1.9);
