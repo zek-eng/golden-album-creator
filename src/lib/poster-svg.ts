@@ -44,14 +44,14 @@ export const DEFAULT_POSTER: PosterData = {
 
 // Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1720;
+export const POSTER_H = 1620;
 
 // Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 380,
+  y: 320,
   w: POSTER_W - 140, // 940
-  h: 760,
+  h: 720,
 };
 
 interface ThemePalette {
@@ -191,9 +191,9 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title (more breathing space)
-  const prefixY = 170;
-  const mainY = prefix ? prefixY + mainSize + 28 : 230;
+  // Title (tighter top spacing toward image)
+  const prefixY = 110;
+  const mainY = prefix ? prefixY + mainSize + 24 : 170;
   // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
   const tzCardW = Math.max(140, scriptSize * 3.6);
   const tzCardH = Math.round(scriptSize * 1.9);
