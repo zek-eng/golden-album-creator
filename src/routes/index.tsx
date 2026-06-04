@@ -27,6 +27,40 @@ function Index() {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [bgError, setBgError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [activeBg, setActiveBg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const dataUrl = await urlToDataUrl(BG_PRESETS[0].src);
+        if (!cancelled) {
+          setActiveBg(BG_PRESETS[0].id);
+          setData((d) => ({ ...d, bgImage: dataUrl }));
+        }
+      } catch {/* ignore */}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const applyPreset = async (id: string) => {
+    const preset = BG_PRESETS.find((p) => p.id === id);
+    if (!preset) return;
+    const dataUrl = await urlToDataUrl(preset.src);
+    setActiveBg(id);
+    setData((d) => ({ ...d, bgImage: dataUrl }));
+  };
+
+  const onBgUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await anyFileToDataUrl(f);
+    setActiveBg("custom");
+    setData((d) => ({ ...d, bgImage: dataUrl }));
+  };
+
+  const setNum = (k: keyof PosterData) => (v: number[]) =>
+    setData((d) => ({ ...d, [k]: v[0] }));
 
   const posterData: PosterData = useMemo(
     () => ({ ...data, choirImage: processedImage ?? data.choirImage }),
