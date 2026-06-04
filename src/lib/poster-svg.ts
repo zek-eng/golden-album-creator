@@ -184,11 +184,17 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title
-  const prefixY = 150;
-  const mainY = prefix ? prefixY + mainSize + 40 : 250;
-  const scriptY = mainY + scriptSize + 20;
-  const ruleY = scriptY + 40;
+  // Title (more breathing space)
+  const prefixY = 170;
+  const mainY = prefix ? prefixY + mainSize + 28 : 230;
+  // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
+  const tzCardW = Math.max(140, scriptSize * 3.6);
+  const tzCardH = Math.round(scriptSize * 1.9);
+  const tzCardX = cx - tzCardW / 2;
+  const tzCardY = mainY + 30;
+  const tzCardR = 18;
+  const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
+  const ruleY = tzCardY + tzCardH + 28;
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
   const metalStops = theme.metal.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
