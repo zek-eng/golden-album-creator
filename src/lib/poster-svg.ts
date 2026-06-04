@@ -208,16 +208,37 @@ export function buildPosterSVG(data: PosterData): string {
   const theme = THEMES[data.theme ?? "milk"];
   const { prefix, main, script } = splitName(data.choirName);
   const mainLen = main.length || 1;
-  const mainSize = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
-  const scriptSize = Math.round(mainSize * 0.62);
+  const autoMain = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
+  const mainSize = data.titleSize && data.titleSize > 0 ? data.titleSize : autoMain;
+  const scriptSize = data.scriptSize && data.scriptSize > 0 ? data.scriptSize : Math.round(mainSize * 0.62);
   const prefixSize = Math.round(mainSize * 0.36);
+
+  const titleFont = data.titleFont ?? "Cinzel";
+  const scriptFont = data.scriptFont ?? "Cinzel";
+  const albumFont = data.albumFont ?? "Cinzel";
+  const albumSize = data.albumSize && data.albumSize > 0 ? data.albumSize : 44;
+  const newAlbumFont = data.newAlbumFont ?? "Cinzel";
+  const newAlbumSize = data.newAlbumSize && data.newAlbumSize > 0 ? data.newAlbumSize : 22;
+  const comingSoonFont = data.comingSoonFont ?? "Cinzel";
+  const comingSoonSize = data.comingSoonSize && data.comingSoonSize > 0 ? data.comingSoonSize : 54;
+  const socialFont = data.socialFont ?? "Cinzel";
+  const socialSize = data.socialSize && data.socialSize > 0 ? data.socialSize : 20;
 
   const { x: ix, y: iy, w: iw, h: ih } = IMAGE_AREA;
   const cx = POSTER_W / 2;
   const cy = POSTER_H / 2;
 
+  // Choir image position & scale (around the image area center)
+  const imgScale = Math.min(2, Math.max(0.4, data.imgScale ?? 1));
+  const imgOX = data.imgOffsetX ?? 0;
+  const imgOY = data.imgOffsetY ?? 0;
+  const iwS = iw * imgScale;
+  const ihS = ih * imgScale;
+  const ixS = ix + (iw - iwS) / 2 + imgOX;
+  const iyS = iy + (ih - ihS) + imgOY; // anchor to bottom of original area, then offset
+
   const img = data.choirImage
-    ? `<image id="choir_image" href="${data.choirImage}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMax meet" />`
+    ? `<image id="choir_image" href="${data.choirImage}" x="${ixS}" y="${iyS}" width="${iwS}" height="${ihS}" preserveAspectRatio="xMidYMax meet" />`
     : `<g id="choir_image_placeholder">
          <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="${theme.base}" opacity="0.25" rx="14"/>
          <text x="${cx}" y="${iy + ih / 2}" text-anchor="middle" fill="${theme.textSoft}" font-family="'Cinzel', serif" font-size="28">Upload choir photo</text>
@@ -248,6 +269,7 @@ export function buildPosterSVG(data: PosterData): string {
   const tzCardR = 18;
   const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
   const ruleY = tzCardY + tzCardH + 18;
+
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
   const metalStops = theme.metal.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
