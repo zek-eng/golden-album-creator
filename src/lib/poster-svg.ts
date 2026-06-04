@@ -5,6 +5,14 @@ export interface PosterData {
   newAlbumText: string;
   comingSoonText: string;
   socialHandle?: string;
+  // Nature backdrop (data URL preferred so export rasterizes correctly)
+  bgImage?: string;
+  bgBlur?: number;      // 0..40 (SVG stdDeviation)
+  bgOpacity?: number;   // 0..1 (image opacity, clamped 0.05..0.15 visually)
+  bgOverlay?: number;   // 0..1 darkness of overlay above background
+  bgOffsetX?: number;   // -300..300 px shift
+  bgOffsetY?: number;   // -300..300 px shift
+  bgScale?: number;     // 1..1.6
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -14,6 +22,13 @@ export const DEFAULT_POSTER: PosterData = {
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
   socialHandle: "The_HarmonyTz",
+  bgImage: "",
+  bgBlur: 14,
+  bgOpacity: 0.1,
+  bgOverlay: 0.65,
+  bgOffsetX: 0,
+  bgOffsetY: 0,
+  bgScale: 1.1,
 };
 
 // Poster canvas
@@ -186,15 +201,22 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="50%" stop-color="#fff1c8" stop-opacity="0.95"/>
       <stop offset="100%" stop-color="#caa05a" stop-opacity="0.55"/>
     </linearGradient>
+
+    <!-- Heavy blur for the distant nature backdrop -->
+    <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 14)}"/>
+    </filter>
   </defs>
 
   <!-- BACKGROUND -->
   <g id="background">
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="#0a0402"/>
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgGrad)"/>
+    ${data.bgImage ? renderNatureBackdrop(data) : ""}
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgWarmth)"/>
     <ellipse cx="${cx}" cy="${iy + ih * 0.45}" rx="${iw * 0.55}" ry="${ih * 0.55}" fill="url(#ambientGlow)"/>
   </g>
+
 
   <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
   <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
@@ -309,6 +331,27 @@ function socialBlock(handle: string): string {
       <text x="${iconSize + gap + iconSize + gap}" y="6"
             font-family="'Cinzel', serif" font-weight="400"
             font-size="20" letter-spacing="4" fill="url(#goldGrad)">${escapeXml(text)}</text>
+    </g>
+  `;
+}
+
+function renderNatureBackdrop(data: PosterData): string {
+  const opacityRaw = data.bgOpacity ?? 0.1;
+  const opacity = Math.min(0.15, Math.max(0.05, opacityRaw));
+  const overlay = Math.min(1, Math.max(0, data.bgOverlay ?? 0.65));
+  const scale = Math.min(1.6, Math.max(1, data.bgScale ?? 1.1));
+  const ox = data.bgOffsetX ?? 0;
+  const oy = data.bgOffsetY ?? 0;
+  const w = POSTER_W * scale;
+  const h = POSTER_H * scale;
+  const x = (POSTER_W - w) / 2 + ox;
+  const y = (POSTER_H - h) / 2 + oy;
+  return `
+    <g id="nature_backdrop">
+      <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
+             preserveAspectRatio="xMidYMid slice"
+             opacity="${opacity}" filter="url(#natureBlur)"/>
+      <rect width="${POSTER_W}" height="${POSTER_H}" fill="#0a0402" opacity="${overlay}"/>
     </g>
   `;
 }

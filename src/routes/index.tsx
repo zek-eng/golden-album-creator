@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useRef, type ChangeEvent } from "react";
+import { useMemo, useState, useRef, useEffect, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { buildPosterSVG, DEFAULT_POSTER, type PosterData } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
+import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,6 +27,40 @@ function Index() {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [bgError, setBgError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [activeBg, setActiveBg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const dataUrl = await urlToDataUrl(BG_PRESETS[0].src);
+        if (!cancelled) {
+          setActiveBg(BG_PRESETS[0].id);
+          setData((d) => ({ ...d, bgImage: dataUrl }));
+        }
+      } catch {/* ignore */}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const applyPreset = async (id: string) => {
+    const preset = BG_PRESETS.find((p) => p.id === id);
+    if (!preset) return;
+    const dataUrl = await urlToDataUrl(preset.src);
+    setActiveBg(id);
+    setData((d) => ({ ...d, bgImage: dataUrl }));
+  };
+
+  const onBgUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await anyFileToDataUrl(f);
+    setActiveBg("custom");
+    setData((d) => ({ ...d, bgImage: dataUrl }));
+  };
+
+  const setNum = (k: keyof PosterData) => (v: number[]) =>
+    setData((d) => ({ ...d, [k]: v[0] }));
 
   const posterData: PosterData = useMemo(
     () => ({ ...data, choirImage: processedImage ?? data.choirImage }),
@@ -113,6 +150,50 @@ function Index() {
               </div>
             )}
 
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Nature Backdrop</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {BG_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => applyPreset(p.id)}
+                    className={`rounded border px-2 py-1.5 text-left text-[11px] leading-tight transition ${
+                      activeBg === p.id
+                        ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                        : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setData((d) => ({ ...d, bgImage: "" }))}
+                  className="rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-left text-[11px] text-[#8a6a48] hover:border-[#a87a42]"
+                >
+                  None
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-[#8a6a48]">Custom backdrop</Label>
+                <Input type="file" accept="image/*" onChange={onBgUpload}
+                  className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
+              </div>
+
+              <SliderRow label="Blur" value={data.bgBlur ?? 14} min={0} max={40} step={1}
+                onChange={setNum("bgBlur")} />
+              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.1) * 100)} min={5} max={15} step={1}
+                onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.65) * 100)} min={0} max={95} step={1}
+                onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
+                onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Offset X" value={data.bgOffsetX ?? 0} min={-300} max={300} step={5}
+                onChange={setNum("bgOffsetX")} />
+              <SliderRow label="Offset Y" value={data.bgOffsetY ?? 0} min={-300} max={300} step={5}
+                onChange={setNum("bgOffsetY")} />
+            </div>
+
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
@@ -145,6 +226,22 @@ function Index() {
     </div>
   );
 }
+
+function SliderRow({ label, value, min, max, step, onChange, suffix }: {
+  label: string; value: number; min: number; max: number; step: number;
+  onChange: (v: number[]) => void; suffix?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px] text-[#8a6a48]">
+        <span>{label}</span>
+        <span className="text-[#c9a878]">{value}{suffix ?? ""}</span>
+      </div>
+      <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} />
+    </div>
+  );
+}
+
 
 function DebugTile({ label, src, checker }: { label: string; src: string | null; checker: boolean }) {
   return (
