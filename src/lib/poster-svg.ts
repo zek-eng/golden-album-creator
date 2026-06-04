@@ -5,6 +5,14 @@ export interface PosterData {
   newAlbumText: string;
   comingSoonText: string;
   socialHandle?: string;
+  // Nature backdrop (data URL preferred so export rasterizes correctly)
+  bgImage?: string;
+  bgBlur?: number;      // 0..40 (SVG stdDeviation)
+  bgOpacity?: number;   // 0..1 (image opacity, clamped 0.05..0.15 visually)
+  bgOverlay?: number;   // 0..1 darkness of overlay above background
+  bgOffsetX?: number;   // -300..300 px shift
+  bgOffsetY?: number;   // -300..300 px shift
+  bgScale?: number;     // 1..1.6
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -14,6 +22,13 @@ export const DEFAULT_POSTER: PosterData = {
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
   socialHandle: "The_HarmonyTz",
+  bgImage: "",
+  bgBlur: 14,
+  bgOpacity: 0.1,
+  bgOverlay: 0.65,
+  bgOffsetX: 0,
+  bgOffsetY: 0,
+  bgScale: 1.1,
 };
 
 // Poster canvas
