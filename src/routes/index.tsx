@@ -270,30 +270,38 @@ function SliderRow({ label, value, min, max, step, onChange, suffix }: {
 
 
 function ModeRow({ label, value, onChange }: {
-  label: string; value: GradientMode; onChange: (m: GradientMode) => void;
+  label: string; value: GradientMode[]; onChange: (r: GradientMode[]) => void;
 }) {
   const opts: { id: GradientMode; label: string }[] = [
     { id: "full", label: "Full" },
     { id: "top", label: "Top" },
     { id: "bottom", label: "Bottom" },
   ];
+  const toggle = (id: GradientMode) => {
+    const has = value.includes(id);
+    const next = has ? value.filter((v) => v !== id) : [...value, id];
+    onChange(next);
+  };
   return (
     <div className="space-y-1">
       <div className="text-[11px] text-[#8a6a48]">{label}</div>
       <div className="grid grid-cols-3 gap-1">
-        {opts.map((o) => (
-          <button
-            key={o.id}
-            onClick={() => onChange(o.id)}
-            className={`rounded border px-2 py-1 text-[10px] transition ${
-              value === o.id
-                ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
-                : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
+        {opts.map((o) => {
+          const active = value.includes(o.id);
+          return (
+            <button
+              key={o.id}
+              onClick={() => toggle(o.id)}
+              className={`rounded border px-2 py-1 text-[10px] transition ${
+                active
+                  ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
+                  : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
