@@ -404,3 +404,41 @@ function DlBtn({ label, onClick, busy, disabled }: { label: string; onClick: () 
     </Button>
   );
 }
+
+function FontRow({ label, font, size, onFont, onSize, min, max, placeholder }: {
+  label: string; font: FontFamily; size: number;
+  onFont: (f: FontFamily) => void; onSize: (s: number) => void;
+  min: number; max: number; placeholder?: string;
+}) {
+  return (
+    <div className="space-y-1.5 border-t border-[#3a2410]/60 pt-2 first:border-0 first:pt-0">
+      <div className="text-[11px] text-[#c9a878]">{label}</div>
+      <div className="flex gap-1.5">
+        <select
+          value={font}
+          onChange={(e) => onFont(e.target.value as FontFamily)}
+          className="flex-1 rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1 text-[11px] text-[#e2c89a]"
+          style={{ fontFamily: `'${font}', serif` }}
+        >
+          {FONT_OPTIONS.map((f) => (
+            <option key={f} value={f} style={{ fontFamily: `'${f}', serif` }}>{f}</option>
+          ))}
+        </select>
+        <input
+          type="number"
+          value={size || ""}
+          placeholder={placeholder ?? String(min)}
+          min={0}
+          max={max}
+          onChange={(e) => {
+            const n = e.target.value === "" ? 0 : Number(e.target.value);
+            onSize(Number.isFinite(n) ? n : 0);
+          }}
+          className="w-16 rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1 text-[11px] text-[#e2c89a]"
+        />
+      </div>
+      <Slider value={[size || min]} min={min} max={max} step={1}
+        onValueChange={(v) => onSize(v[0])} />
+    </div>
+  );
+}
