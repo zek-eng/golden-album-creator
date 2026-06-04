@@ -220,11 +220,62 @@ function Index() {
                 onChange={setNum("bgOffsetY")} />
             </div>
 
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Choir Image Position</p>
+              <SliderRow label="Scale" value={Math.round((data.imgScale ?? 1) * 100)} min={40} max={200} step={2}
+                onChange={(v) => setData((d) => ({ ...d, imgScale: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Offset X" value={data.imgOffsetX ?? 0} min={-400} max={400} step={2}
+                onChange={setNum("imgOffsetX")} />
+              <SliderRow label="Offset Y" value={data.imgOffsetY ?? 0} min={-400} max={400} step={2}
+                onChange={setNum("imgOffsetY")} />
+              <button
+                onClick={() => setData((d) => ({ ...d, imgScale: 1, imgOffsetX: 0, imgOffsetY: 0 }))}
+                className="w-full rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-[11px] text-[#c9a878] hover:border-[#a87a42]"
+              >
+                Reset position
+              </button>
+            </div>
+
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
             <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
             <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
+
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Typography</p>
+
+              <FontRow label="Title (Choir name)" font={data.titleFont ?? "Cinzel"} size={data.titleSize ?? 0}
+                onFont={(f) => setData((d) => ({ ...d, titleFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, titleSize: s }))}
+                min={18} max={120} placeholder="auto" />
+
+              <FontRow label="Script (last word)" font={data.scriptFont ?? "Cinzel"} size={data.scriptSize ?? 0}
+                onFont={(f) => setData((d) => ({ ...d, scriptFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, scriptSize: s }))}
+                min={14} max={100} placeholder="auto" />
+
+              <FontRow label="Album title" font={data.albumFont ?? "Cinzel"} size={data.albumSize ?? 44}
+                onFont={(f) => setData((d) => ({ ...d, albumFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, albumSize: s }))}
+                min={16} max={90} />
+
+              <FontRow label="New album text" font={data.newAlbumFont ?? "Cinzel"} size={data.newAlbumSize ?? 22}
+                onFont={(f) => setData((d) => ({ ...d, newAlbumFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, newAlbumSize: s }))}
+                min={10} max={60} />
+
+              <FontRow label="Coming soon" font={data.comingSoonFont ?? "Cinzel"} size={data.comingSoonSize ?? 54}
+                onFont={(f) => setData((d) => ({ ...d, comingSoonFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, comingSoonSize: s }))}
+                min={18} max={120} />
+
+              <FontRow label="Social handle" font={data.socialFont ?? "Cinzel"} size={data.socialSize ?? 20}
+                onFont={(f) => setData((d) => ({ ...d, socialFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, socialSize: s }))}
+                min={10} max={48} />
+            </div>
+
 
             <div className="pt-2">
               <p className="mb-2 text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
