@@ -199,18 +199,18 @@ function Index() {
 
               <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
                 onChange={setNum("bgBlur")} />
-              <ModeRow label="Blur area" value={data.bgBlurMode ?? "full"}
-                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgBlurMode: m }))} />
+              <ModeRow label="Blur area" value={data.bgBlurRegions ?? ["full"]}
+                onChange={(r) => setData((d) => ({ ...d, bgBlurRegions: r }))} />
 
               <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
-              <ModeRow label="Opacity area" value={data.bgOpacityMode ?? "full"}
-                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgOpacityMode: m }))} />
+              <ModeRow label="Opacity area" value={data.bgOpacityRegions ?? ["full"]}
+                onChange={(r) => setData((d) => ({ ...d, bgOpacityRegions: r }))} />
 
               <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
-              <ModeRow label="Overlay area" value={data.bgOverlayMode ?? "full"}
-                onChange={(m: GradientMode) => setData((d) => ({ ...d, bgOverlayMode: m }))} />
+              <ModeRow label="Overlay area" value={data.bgOverlayRegions ?? ["full"]}
+                onChange={(r) => setData((d) => ({ ...d, bgOverlayRegions: r }))} />
 
               <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
                 onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
