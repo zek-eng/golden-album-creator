@@ -444,10 +444,10 @@ export function buildPosterSVG(data: PosterData): string {
 </svg>`;
 }
 
-function socialBlock(handle: string): string {
+function socialBlock(handle: string, fontFamily = "Cinzel", fontSize = 20): string {
   const text = `@${handle}`;
-  const approxTextW = text.length * 12;
-  const iconSize = 26;
+  const approxTextW = text.length * (fontSize * 0.6);
+  const iconSize = Math.max(20, Math.round(fontSize * 1.3));
   const gap = 14;
   const groupW = iconSize + gap + iconSize + gap + approxTextW;
   const startX = -groupW / 2;
@@ -466,13 +466,14 @@ function socialBlock(handle: string): string {
         <path d="M${iconSize / 2 - 3} ${iconSize / 2 - 4} L${iconSize / 2 + 5} ${iconSize / 2} L${iconSize / 2 - 3} ${iconSize / 2 + 4} Z"
               fill="url(#goldGrad)"/>
       </g>
-      <text x="${iconSize + gap + iconSize + gap}" y="6"
-            font-family="'Cinzel', serif" font-weight="400"
-            font-size="20" letter-spacing="4" fill="url(#goldGrad)"
+      <text x="${iconSize + gap + iconSize + gap}" y="${fontSize * 0.3}"
+            font-family="'${fontFamily}', serif" font-weight="400"
+            font-size="${fontSize}" letter-spacing="4" fill="url(#goldGrad)"
             style="text-transform:none">${escapeXml(text)}</text>
     </g>
   `;
 }
+
 
 function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const opacity = Math.min(1, Math.max(0, data.bgOpacity ?? 0.45));
