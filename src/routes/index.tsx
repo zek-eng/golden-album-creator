@@ -154,14 +154,14 @@ function Index() {
               <p className="text-xs uppercase tracking-widest text-[#a87a42]">Template</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {([
-                  { id: "royal" as PosterTheme, label: "Royal Gold" },
+                  { id: "milk" as PosterTheme, label: "Milk Cream" },
                   { id: "ocean" as PosterTheme, label: "Ocean & Sky" },
                 ]).map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setData((d) => ({ ...d, theme: t.id }))}
                     className={`rounded border px-2 py-1.5 text-[11px] leading-tight transition ${
-                      (data.theme ?? "royal") === t.id
+                      (data.theme ?? "milk") === t.id
                         ? "border-[#caa05a] bg-[#2a1608] text-[#f3d28a]"
                         : "border-[#3a2410] bg-[#0f0703] text-[#c9a878] hover:border-[#a87a42]"
                     }`}
