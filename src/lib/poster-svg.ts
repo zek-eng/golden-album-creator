@@ -85,9 +85,9 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title layout — bring heading closer to image
-  const prefixY = 180;
-  const mainY = prefix ? 290 : 250;
+  // Title layout — full line gap between prefix ("THE") and main ("HARMONY")
+  const prefixY = 150;
+  const mainY = prefix ? prefixY + mainSize + 40 : 250;
   const scriptY = mainY + scriptSize * 0.78;
   const ruleY = scriptY + 40;
 
