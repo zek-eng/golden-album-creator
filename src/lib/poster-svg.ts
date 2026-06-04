@@ -155,8 +155,9 @@ export function buildPosterSVG(data: PosterData): string {
   const theme = THEMES[data.theme ?? "milk"];
   const { prefix, main, script } = splitName(data.choirName);
   const mainLen = main.length || 1;
-  const mainSize = Math.min(76, Math.max(40, Math.floor(940 / Math.max(mainLen, 5) * 0.95)));
-  const scriptSize = Math.round(mainSize * 0.55);
+  const mainSize = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
+  const scriptSize = Math.round(mainSize * 0.62);
+  const prefixSize = Math.round(mainSize * 0.36);
 
   const { x: ix, y: iy, w: iw, h: ih } = IMAGE_AREA;
   const cx = POSTER_W / 2;
