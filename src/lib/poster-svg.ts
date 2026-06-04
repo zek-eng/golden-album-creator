@@ -27,9 +27,9 @@ export const DEFAULT_POSTER: PosterData = {
   socialHandle: "The_HarmonyTz",
   theme: "royal",
   bgImage: "",
-  bgBlur: 4,
-  bgOpacity: 0.9,
-  bgOverlay: 0.06,
+  bgBlur: 5,
+  bgOpacity: 0.82,
+  bgOverlay: 0.2,
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
@@ -194,8 +194,8 @@ export function buildPosterSVG(data: PosterData): string {
   const glassEdgeStops = theme.glassEdge.map(s => `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`).join("");
   const frameStops = theme.frame.map(s => `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`).join("");
   const hasNature = Boolean(data.bgImage);
-  const warmthOpacity = hasNature ? 0.22 : 1;
-  const ambientOpacity = hasNature ? 0.55 : 1;
+  const warmthOpacity = hasNature ? 0.34 : 1;
+  const ambientOpacity = hasNature ? 0.44 : 1;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cinzel', serif">
@@ -384,10 +384,10 @@ function socialBlock(handle: string): string {
 }
 
 function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
-  const opacity = Math.min(1, Math.max(0.35, data.bgOpacity ?? 0.9));
-  const overlay = Math.min(0.45, Math.max(0, data.bgOverlay ?? 0.06));
+  const opacity = Math.min(1, Math.max(0.35, data.bgOpacity ?? 0.82));
+  const overlay = Math.min(0.55, Math.max(0, data.bgOverlay ?? 0.2));
   const scale = Math.min(1.6, Math.max(1, data.bgScale ?? 1.1));
-  const clearLayerOpacity = Math.min(0.24, opacity * 0.34);
+  const clearLayerOpacity = Math.min(0.2, opacity * 0.26);
   const ox = data.bgOffsetX ?? 0;
   const oy = data.bgOffsetY ?? 0;
   const w = POSTER_W * scale;
