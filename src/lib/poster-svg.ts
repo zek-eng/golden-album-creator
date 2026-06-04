@@ -304,23 +304,32 @@ export function buildPosterSVG(data: PosterData): string {
   <g id="title">
     ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
           font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="44" letter-spacing="32"
+          fill="url(#goldGrad)" font-size="${prefixSize}" letter-spacing="24"
           filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
 
     <text x="${cx}" y="${mainY}" text-anchor="middle"
           font-family="'Cinzel', serif" font-weight="500"
-          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="12"
+          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(main)}</text>
 
-    ${script ? `<text x="${cx}" y="${scriptY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="24"
-          filter="url(#goldGlow)">${escapeXml(script)}</text>` : ""}
+    ${script ? `<g id="tz_card" filter="url(#cardShadow)">
+      <rect x="${tzCardX}" y="${tzCardY}" width="${tzCardW}" height="${tzCardH}" rx="${tzCardR}" ry="${tzCardR}"
+            fill="url(#glassFill)"/>
+      <rect x="${tzCardX + 1}" y="${tzCardY + 1}" width="${tzCardW - 2}" height="${tzCardH * 0.45}" rx="${tzCardR - 2}" ry="${tzCardR - 2}"
+            fill="url(#glassTopGloss)" opacity="0.5"/>
+      <rect x="${tzCardX + 0.5}" y="${tzCardY + 0.5}" width="${tzCardW - 1}" height="${tzCardH - 1}" rx="${tzCardR}" ry="${tzCardR}"
+            fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
+      <text x="${cx}" y="${scriptY}" text-anchor="middle"
+            font-family="'Cinzel', serif" font-weight="400"
+            fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="16"
+            filter="url(#goldGlow)">${escapeXml(script)}</text>
+    </g>` : ""}
 
     <line x1="${cx - 220}" y1="${ruleY}" x2="${cx - 30}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
     <line x1="${cx + 30}"  y1="${ruleY}" x2="${cx + 220}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
     
   </g>
+
 
   <ellipse cx="${cx}" cy="${iy + ih - 20}" rx="${iw * 0.5}" ry="60" fill="url(#floorPool)"/>
   <ellipse cx="${cx}" cy="${iy + ih - 4}" rx="${iw * 0.38}" ry="22" fill="url(#subjectShadow)" opacity="0.8"/>
