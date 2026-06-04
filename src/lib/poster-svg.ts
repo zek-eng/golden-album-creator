@@ -197,6 +197,7 @@ export function buildPosterSVG(data: PosterData): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cinzel', serif">
   <defs>
+    <style type="text/css"><![CDATA[text{text-transform:none!important}]]></style>
     <radialGradient id="bgGrad" cx="50%" cy="30%" r="85%">${gradStops}</radialGradient>
     <linearGradient id="bgWarmth" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"  stop-color="${theme.warmthTop}" stop-opacity="0.35"/>
