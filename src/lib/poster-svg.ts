@@ -1,6 +1,20 @@
 export type PosterTheme = "milk" | "ocean";
 export type GradientMode = "full" | "top" | "bottom";
 
+export const FONT_OPTIONS = [
+  "Cinzel",
+  "Cormorant Garamond",
+  "Playfair Display",
+  "Great Vibes",
+  "Allura",
+  "Dancing Script",
+  "Montserrat",
+  "Bebas Neue",
+  "Oswald",
+  "Inter",
+] as const;
+export type FontFamily = (typeof FONT_OPTIONS)[number];
+
 export interface PosterData {
   choirImage: string; // transparent PNG (background removed)
   choirName: string;
@@ -11,16 +25,32 @@ export interface PosterData {
   theme?: PosterTheme;
   // Nature backdrop (data URL preferred so export rasterizes correctly)
   bgImage?: string;
-  bgBlur?: number;      // 0..40 (SVG stdDeviation)
-  bgOpacity?: number;   // 0..1 image opacity
-  bgOverlay?: number;   // 0..1 darkness of overlay above background
-  bgOffsetX?: number;   // -300..300 px shift
-  bgOffsetY?: number;   // -300..300 px shift
-  bgScale?: number;     // 1..1.6
-  // Each effect can apply to any combination of regions independently.
+  bgBlur?: number;
+  bgOpacity?: number;
+  bgOverlay?: number;
+  bgOffsetX?: number;
+  bgOffsetY?: number;
+  bgScale?: number;
   bgBlurRegions?: GradientMode[];
   bgOpacityRegions?: GradientMode[];
   bgOverlayRegions?: GradientMode[];
+  // Choir image position & scale (within the image area)
+  imgOffsetX?: number; // -400..400 px
+  imgOffsetY?: number; // -400..400 px
+  imgScale?: number;   // 0.4..2
+  // Per-section fonts (family) and font sizes (px in SVG units)
+  titleFont?: FontFamily;
+  titleSize?: number;     // 0 = auto
+  scriptFont?: FontFamily;
+  scriptSize?: number;    // 0 = auto
+  albumFont?: FontFamily;
+  albumSize?: number;
+  newAlbumFont?: FontFamily;
+  newAlbumSize?: number;
+  comingSoonFont?: FontFamily;
+  comingSoonSize?: number;
+  socialFont?: FontFamily;
+  socialSize?: number;
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -41,6 +71,21 @@ export const DEFAULT_POSTER: PosterData = {
   bgBlurRegions: ["full"],
   bgOpacityRegions: ["full"],
   bgOverlayRegions: ["full"],
+  imgOffsetX: 0,
+  imgOffsetY: 0,
+  imgScale: 1,
+  titleFont: "Cinzel",
+  titleSize: 0,
+  scriptFont: "Cinzel",
+  scriptSize: 0,
+  albumFont: "Cinzel",
+  albumSize: 44,
+  newAlbumFont: "Cinzel",
+  newAlbumSize: 22,
+  comingSoonFont: "Cinzel",
+  comingSoonSize: 54,
+  socialFont: "Cinzel",
+  socialSize: 20,
 };
 
 // Poster canvas
