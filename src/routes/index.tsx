@@ -202,11 +202,11 @@ function Index() {
                   className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
               </div>
 
-              <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
+              <SliderRow label="Blur" value={data.bgBlur ?? 8} min={0} max={30} step={1}
                 onChange={setNum("bgBlur")} />
-              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
+              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.78) * 100)} min={28} max={95} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
-              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
+              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.14) * 100)} min={0} max={65} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
               <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
                 onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
