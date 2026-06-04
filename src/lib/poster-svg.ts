@@ -440,18 +440,18 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const fade = 1 - opacity; // amount of bg to mix in
   if (fade > 0.001) {
     if (opacityMode === "full") {
-      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.bg}" opacity="${fade}"/>`;
+      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.base}" opacity="${fade}"/>`;
     } else {
       const gid = `bgOpFade_${opacityMode}`;
       const stops = opacityMode === "top"
-        ? `<stop offset="0%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
-           <stop offset="50%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
-           <stop offset="80%" stop-color="${theme.bg}" stop-opacity="0"/>
-           <stop offset="100%" stop-color="${theme.bg}" stop-opacity="0"/>`
-        : `<stop offset="0%" stop-color="${theme.bg}" stop-opacity="0"/>
-           <stop offset="20%" stop-color="${theme.bg}" stop-opacity="0"/>
-           <stop offset="50%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
-           <stop offset="100%" stop-color="${theme.bg}" stop-opacity="${fade}"/>`;
+        ? `<stop offset="0%" stop-color="${theme.base}" stop-opacity="${fade}"/>
+           <stop offset="50%" stop-color="${theme.base}" stop-opacity="${fade}"/>
+           <stop offset="80%" stop-color="${theme.base}" stop-opacity="0"/>
+           <stop offset="100%" stop-color="${theme.base}" stop-opacity="0"/>`
+        : `<stop offset="0%" stop-color="${theme.base}" stop-opacity="0"/>
+           <stop offset="20%" stop-color="${theme.base}" stop-opacity="0"/>
+           <stop offset="50%" stop-color="${theme.base}" stop-opacity="${fade}"/>
+           <stop offset="100%" stop-color="${theme.base}" stop-opacity="${fade}"/>`;
       defs += `<linearGradient id="${gid}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
       opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${gid})"/>`;
     }
