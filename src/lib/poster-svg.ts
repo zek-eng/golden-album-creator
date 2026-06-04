@@ -386,6 +386,13 @@ export function buildPosterSVG(data: PosterData): string {
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
         stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
 
+  ${data.bgImage ? `
+  <!-- TEXT LEGIBILITY SCRIMS -->
+  <rect x="0" y="0" width="${POSTER_W}" height="${Math.max(260, ruleY + 30)}" fill="url(#textScrimTop)"/>
+  <rect x="0" y="${newAlbumY - 60}" width="${POSTER_W}" height="${POSTER_H - (newAlbumY - 60)}" fill="url(#textScrimBottom)"/>
+  ` : ""}
+
+
   <!-- TITLE BLOCK -->
   <g id="title">
     ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
