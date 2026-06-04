@@ -201,15 +201,22 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="50%" stop-color="#fff1c8" stop-opacity="0.95"/>
       <stop offset="100%" stop-color="#caa05a" stop-opacity="0.55"/>
     </linearGradient>
+
+    <!-- Heavy blur for the distant nature backdrop -->
+    <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 14)}"/>
+    </filter>
   </defs>
 
   <!-- BACKGROUND -->
   <g id="background">
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="#0a0402"/>
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgGrad)"/>
+    ${data.bgImage ? renderNatureBackdrop(data) : ""}
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgWarmth)"/>
     <ellipse cx="${cx}" cy="${iy + ih * 0.45}" rx="${iw * 0.55}" ry="${ih * 0.55}" fill="url(#ambientGlow)"/>
   </g>
+
 
   <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
   <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
