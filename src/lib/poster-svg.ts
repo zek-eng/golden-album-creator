@@ -351,6 +351,17 @@ export function buildPosterSVG(data: PosterData): string {
     <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
       <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 10)}"/>
     </filter>
+
+    <linearGradient id="textScrimTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.6"/>
+      <stop offset="60%"  stop-color="#000" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="textScrimBottom" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.7"/>
+      <stop offset="55%"  stop-color="#000" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
   </defs>
 
   <!-- BACKGROUND -->
