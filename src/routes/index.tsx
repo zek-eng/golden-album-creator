@@ -13,7 +13,7 @@ import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/l
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Luxury Poster Generator" },
+      { title: "The Harmony Tz Poster Generator" },
       { name: "description", content: "Generate luxury choir/album posters from a locked SVG template." },
     ],
   }),
@@ -116,11 +116,8 @@ function Index() {
       <div className="mx-auto max-w-7xl px-6 py-10">
         <header className="mb-8">
           <h1 className="text-4xl tracking-wide" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-            Luxury Poster Generator
+            The Harmony Tz Poster Generator
           </h1>
-          <p className="mt-1 text-sm text-[#a87a42]">
-            100% local background removal — no API keys, no external services.
-          </p>
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
@@ -133,9 +130,7 @@ function Index() {
                 className="bg-[#0f0703] border-[#3a2410] text-[#e2c89a] file:text-[#c9a878]"
               />
               <p className="text-xs text-[#8a6a48]">
-                {busy ?? (processedImage
-                  ? "Background removed. Ready to export."
-                  : "Upload to start. The first run downloads a small AI model in your browser.")}
+                {busy ?? (processedImage ? "Background removed. Ready to export." : "")}
               </p>
               {bgError && <p className="text-xs text-red-400">{bgError}</p>}
             </div>
