@@ -16,14 +16,14 @@ export const DEFAULT_POSTER: PosterData = {
   socialHandle: "The_HarmonyTz",
 };
 
-// Poster canvas — taller to give footer / coming-soon breathing room
+// Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1780;
+export const POSTER_H = 1720;
 
-// Choir image area — generous gap from heading above and card below
+// Choir image area — tightened gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 540,
+  y: 460,
   w: POSTER_W - 140, // 940
   h: 720,
 };
@@ -73,23 +73,23 @@ export function buildPosterSVG(data: PosterData): string {
 
   // Album card geometry — placed well below image
   const cardW = 820;
-  const cardH = 130;
+  const cardH = 120;
   const cardX = cx - cardW / 2;
-  const cardY = iy + ih + 70;
+  const cardY = iy + ih + 40;
   const cardR = 26;
 
-  // Footer geometry — increased gaps to prevent collisions
-  const newAlbumY = cardY + cardH + 80;
-  const comingSoonY = newAlbumY + 95;
-  const socialY = comingSoonY + 110; // safe gap below "COMING SOON"
+  // Footer geometry — tight enough to clear the bottom border
+  const newAlbumY = cardY + cardH + 55;
+  const comingSoonY = newAlbumY + 70;
+  const socialY = comingSoonY + 80;
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title layout
-  const prefixY = 210;
-  const mainY = prefix ? 320 : 270;
-  const scriptY = mainY + scriptSize * 0.85;
-  const ruleY = scriptY + 60;
+  // Title layout — bring heading closer to image
+  const prefixY = 180;
+  const mainY = prefix ? 290 : 250;
+  const scriptY = mainY + scriptSize * 0.78;
+  const ruleY = scriptY + 40;
 
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -199,7 +199,7 @@ export function buildPosterSVG(data: PosterData): string {
   <!-- BACKGROUND SCRIPT WATERMARK — diagonal 45°, large, behind everything (above the bg, below content) -->
   <g id="bg_script" opacity="0.085" transform="rotate(-45 ${cx} ${cy})">
     <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
-          font-family="'Allura', cursive" font-size="460"
+          font-family="'Pinyon Script', 'Italianno', cursive" font-style="italic" font-size="500"
           fill="url(#goldGrad)" letter-spacing="6">${escapeXml(main || "Harmony")}</text>
   </g>
 
@@ -224,7 +224,7 @@ export function buildPosterSVG(data: PosterData): string {
           filter="url(#goldGlow)">${escapeXml(main)}</text>
 
     ${script ? `<text x="${cx}" y="${scriptY}" text-anchor="middle"
-          font-family="'Allura', cursive" font-weight="400"
+          font-family="'Pinyon Script', 'Italianno', cursive" font-style="italic" font-weight="400"
           fill="url(#goldGrad)" font-size="${scriptSize}"
           filter="url(#goldGlow)">${escapeXml(script)}</text>` : ""}
 
