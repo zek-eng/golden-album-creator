@@ -50,7 +50,7 @@ export const POSTER_H = 1560;
 // Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 320,
+  y: 280,
   w: POSTER_W - 140, // 940
   h: 720,
 };
