@@ -10,6 +10,10 @@ export interface BgPreset {
   src: string;
 }
 
+export async function resolveBgSource(url: string): Promise<string> {
+  return new URL(url, window.location.origin).href;
+}
+
 export const BG_PRESETS: BgPreset[] = [
   { id: "sunrise", label: "Golden Sunrise Mountains", src: bgSunrise },
   { id: "clouds",  label: "Soft Clouds & Sky",        src: bgClouds },
