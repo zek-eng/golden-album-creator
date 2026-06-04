@@ -1,4 +1,4 @@
-export type PosterTheme = "royal" | "ocean";
+export type PosterTheme = "milk" | "ocean";
 
 export interface PosterData {
   choirImage: string; // transparent PNG (background removed)
