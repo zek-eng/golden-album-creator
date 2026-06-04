@@ -1,6 +1,20 @@
 export type PosterTheme = "milk" | "ocean";
 export type GradientMode = "full" | "top" | "bottom";
 
+export const FONT_OPTIONS = [
+  "Cinzel",
+  "Cormorant Garamond",
+  "Playfair Display",
+  "Great Vibes",
+  "Allura",
+  "Dancing Script",
+  "Montserrat",
+  "Bebas Neue",
+  "Oswald",
+  "Inter",
+] as const;
+export type FontFamily = (typeof FONT_OPTIONS)[number];
+
 export interface PosterData {
   choirImage: string; // transparent PNG (background removed)
   choirName: string;
@@ -11,16 +25,32 @@ export interface PosterData {
   theme?: PosterTheme;
   // Nature backdrop (data URL preferred so export rasterizes correctly)
   bgImage?: string;
-  bgBlur?: number;      // 0..40 (SVG stdDeviation)
-  bgOpacity?: number;   // 0..1 image opacity
-  bgOverlay?: number;   // 0..1 darkness of overlay above background
-  bgOffsetX?: number;   // -300..300 px shift
-  bgOffsetY?: number;   // -300..300 px shift
-  bgScale?: number;     // 1..1.6
-  // Each effect can apply to any combination of regions independently.
+  bgBlur?: number;
+  bgOpacity?: number;
+  bgOverlay?: number;
+  bgOffsetX?: number;
+  bgOffsetY?: number;
+  bgScale?: number;
   bgBlurRegions?: GradientMode[];
   bgOpacityRegions?: GradientMode[];
   bgOverlayRegions?: GradientMode[];
+  // Choir image position & scale (within the image area)
+  imgOffsetX?: number; // -400..400 px
+  imgOffsetY?: number; // -400..400 px
+  imgScale?: number;   // 0.4..2
+  // Per-section fonts (family) and font sizes (px in SVG units)
+  titleFont?: FontFamily;
+  titleSize?: number;     // 0 = auto
+  scriptFont?: FontFamily;
+  scriptSize?: number;    // 0 = auto
+  albumFont?: FontFamily;
+  albumSize?: number;
+  newAlbumFont?: FontFamily;
+  newAlbumSize?: number;
+  comingSoonFont?: FontFamily;
+  comingSoonSize?: number;
+  socialFont?: FontFamily;
+  socialSize?: number;
 }
 
 export const DEFAULT_POSTER: PosterData = {
@@ -41,6 +71,21 @@ export const DEFAULT_POSTER: PosterData = {
   bgBlurRegions: ["full"],
   bgOpacityRegions: ["full"],
   bgOverlayRegions: ["full"],
+  imgOffsetX: 0,
+  imgOffsetY: 0,
+  imgScale: 1,
+  titleFont: "Cinzel",
+  titleSize: 0,
+  scriptFont: "Cinzel",
+  scriptSize: 0,
+  albumFont: "Cinzel",
+  albumSize: 44,
+  newAlbumFont: "Cinzel",
+  newAlbumSize: 22,
+  comingSoonFont: "Cinzel",
+  comingSoonSize: 54,
+  socialFont: "Cinzel",
+  socialSize: 20,
 };
 
 // Poster canvas
@@ -163,16 +208,37 @@ export function buildPosterSVG(data: PosterData): string {
   const theme = THEMES[data.theme ?? "milk"];
   const { prefix, main, script } = splitName(data.choirName);
   const mainLen = main.length || 1;
-  const mainSize = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
-  const scriptSize = Math.round(mainSize * 0.62);
+  const autoMain = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
+  const mainSize = data.titleSize && data.titleSize > 0 ? data.titleSize : autoMain;
+  const scriptSize = data.scriptSize && data.scriptSize > 0 ? data.scriptSize : Math.round(mainSize * 0.62);
   const prefixSize = Math.round(mainSize * 0.36);
+
+  const titleFont = data.titleFont ?? "Cinzel";
+  const scriptFont = data.scriptFont ?? "Cinzel";
+  const albumFont = data.albumFont ?? "Cinzel";
+  const albumSize = data.albumSize && data.albumSize > 0 ? data.albumSize : 44;
+  const newAlbumFont = data.newAlbumFont ?? "Cinzel";
+  const newAlbumSize = data.newAlbumSize && data.newAlbumSize > 0 ? data.newAlbumSize : 22;
+  const comingSoonFont = data.comingSoonFont ?? "Cinzel";
+  const comingSoonSize = data.comingSoonSize && data.comingSoonSize > 0 ? data.comingSoonSize : 54;
+  const socialFont = data.socialFont ?? "Cinzel";
+  const socialSize = data.socialSize && data.socialSize > 0 ? data.socialSize : 20;
 
   const { x: ix, y: iy, w: iw, h: ih } = IMAGE_AREA;
   const cx = POSTER_W / 2;
   const cy = POSTER_H / 2;
 
+  // Choir image position & scale (around the image area center)
+  const imgScale = Math.min(2, Math.max(0.4, data.imgScale ?? 1));
+  const imgOX = data.imgOffsetX ?? 0;
+  const imgOY = data.imgOffsetY ?? 0;
+  const iwS = iw * imgScale;
+  const ihS = ih * imgScale;
+  const ixS = ix + (iw - iwS) / 2 + imgOX;
+  const iyS = iy + (ih - ihS) + imgOY; // anchor to bottom of original area, then offset
+
   const img = data.choirImage
-    ? `<image id="choir_image" href="${data.choirImage}" x="${ix}" y="${iy}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMax meet" />`
+    ? `<image id="choir_image" href="${data.choirImage}" x="${ixS}" y="${iyS}" width="${iwS}" height="${ihS}" preserveAspectRatio="xMidYMax meet" />`
     : `<g id="choir_image_placeholder">
          <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="${theme.base}" opacity="0.25" rx="14"/>
          <text x="${cx}" y="${iy + ih / 2}" text-anchor="middle" fill="${theme.textSoft}" font-family="'Cinzel', serif" font-size="28">Upload choir photo</text>
@@ -203,6 +269,7 @@ export function buildPosterSVG(data: PosterData): string {
   const tzCardR = 18;
   const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
   const ruleY = tzCardY + tzCardH + 18;
+
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
   const metalStops = theme.metal.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
@@ -308,15 +375,15 @@ export function buildPosterSVG(data: PosterData): string {
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
         stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
 
-  <!-- TITLE BLOCK — all Cinzel -->
+  <!-- TITLE BLOCK -->
   <g id="title">
     ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
+          font-family="'${titleFont}', serif" font-weight="400"
           fill="url(#goldGrad)" font-size="${prefixSize}" letter-spacing="24"
           filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
 
     <text x="${cx}" y="${mainY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="500"
+          font-family="'${titleFont}', serif" font-weight="500"
           fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(main)}</text>
 
@@ -328,7 +395,7 @@ export function buildPosterSVG(data: PosterData): string {
       <rect x="${tzCardX + 0.5}" y="${tzCardY + 0.5}" width="${tzCardW - 1}" height="${tzCardH - 1}" rx="${tzCardR}" ry="${tzCardR}"
             fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
       <text x="${cx}" y="${scriptY}" text-anchor="middle"
-            font-family="'Cinzel', serif" font-weight="400"
+            font-family="'${scriptFont}', serif" font-weight="400"
             fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="16"
             filter="url(#goldGlow)">${escapeXml(script)}</text>
     </g>` : ""}
@@ -353,33 +420,34 @@ export function buildPosterSVG(data: PosterData): string {
           fill="url(#glassTopGloss)" opacity="0.5"/>
     <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardW - 1}" height="${cardH - 1}" rx="${cardR}" ry="${cardR}"
           fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
-    <text x="${cx}" y="${cardY + cardH / 2 + 14}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="44" letter-spacing="10"
+    <text x="${cx}" y="${cardY + cardH / 2 + albumSize * 0.32}" text-anchor="middle"
+          font-family="'${albumFont}', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="${albumSize}" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(data.albumTitle)}</text>
   </g>
 
   <g id="footer">
     <text x="${cx}" y="${newAlbumY}" text-anchor="middle"
-          fill="${theme.textSoft}" font-family="'Cinzel', serif" font-weight="400"
-          font-size="22" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
+          fill="${theme.textSoft}" font-family="'${newAlbumFont}', serif" font-weight="400"
+          font-size="${newAlbumSize}" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
     <line x1="${cx - 30}" y1="${newAlbumY + 18}" x2="${cx + 30}" y2="${newAlbumY + 18}" stroke="url(#goldLine)" stroke-width="1"/>
     <text x="${cx}" y="${comingSoonY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="54" letter-spacing="18"
+          font-family="'${comingSoonFont}', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="${comingSoonSize}" letter-spacing="18"
           filter="url(#goldGlow)">${escapeXml(data.comingSoonText)}</text>
   </g>
 
   <g id="social" transform="translate(${cx} ${socialY})">
-    ${socialBlock(handle)}
+    ${socialBlock(handle, socialFont, socialSize)}
+
   </g>
 </svg>`;
 }
 
-function socialBlock(handle: string): string {
+function socialBlock(handle: string, fontFamily = "Cinzel", fontSize = 20): string {
   const text = `@${handle}`;
-  const approxTextW = text.length * 12;
-  const iconSize = 26;
+  const approxTextW = text.length * (fontSize * 0.6);
+  const iconSize = Math.max(20, Math.round(fontSize * 1.3));
   const gap = 14;
   const groupW = iconSize + gap + iconSize + gap + approxTextW;
   const startX = -groupW / 2;
@@ -398,13 +466,14 @@ function socialBlock(handle: string): string {
         <path d="M${iconSize / 2 - 3} ${iconSize / 2 - 4} L${iconSize / 2 + 5} ${iconSize / 2} L${iconSize / 2 - 3} ${iconSize / 2 + 4} Z"
               fill="url(#goldGrad)"/>
       </g>
-      <text x="${iconSize + gap + iconSize + gap}" y="6"
-            font-family="'Cinzel', serif" font-weight="400"
-            font-size="20" letter-spacing="4" fill="url(#goldGrad)"
+      <text x="${iconSize + gap + iconSize + gap}" y="${fontSize * 0.3}"
+            font-family="'${fontFamily}', serif" font-weight="400"
+            font-size="${fontSize}" letter-spacing="4" fill="url(#goldGrad)"
             style="text-transform:none">${escapeXml(text)}</text>
     </g>
   `;
 }
+
 
 function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const opacity = Math.min(1, Math.max(0, data.bgOpacity ?? 0.45));

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme, type GradientMode } from "@/lib/poster-svg";
+import { buildPosterSVG, DEFAULT_POSTER, FONT_OPTIONS, type PosterData, type PosterTheme, type GradientMode, type FontFamily } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
 import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
@@ -220,11 +220,62 @@ function Index() {
                 onChange={setNum("bgOffsetY")} />
             </div>
 
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Choir Image Position</p>
+              <SliderRow label="Scale" value={Math.round((data.imgScale ?? 1) * 100)} min={40} max={200} step={2}
+                onChange={(v) => setData((d) => ({ ...d, imgScale: v[0] / 100 }))} suffix="%" />
+              <SliderRow label="Offset X" value={data.imgOffsetX ?? 0} min={-400} max={400} step={2}
+                onChange={setNum("imgOffsetX")} />
+              <SliderRow label="Offset Y" value={data.imgOffsetY ?? 0} min={-400} max={400} step={2}
+                onChange={setNum("imgOffsetY")} />
+              <button
+                onClick={() => setData((d) => ({ ...d, imgScale: 1, imgOffsetX: 0, imgOffsetY: 0 }))}
+                className="w-full rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1.5 text-[11px] text-[#c9a878] hover:border-[#a87a42]"
+              >
+                Reset position
+              </button>
+            </div>
+
             <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
             <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
             <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
             <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
             <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
+
+            <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+              <p className="text-xs uppercase tracking-widest text-[#a87a42]">Typography</p>
+
+              <FontRow label="Title (Choir name)" font={data.titleFont ?? "Cinzel"} size={data.titleSize ?? 0}
+                onFont={(f) => setData((d) => ({ ...d, titleFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, titleSize: s }))}
+                min={18} max={120} placeholder="auto" />
+
+              <FontRow label="Script (last word)" font={data.scriptFont ?? "Cinzel"} size={data.scriptSize ?? 0}
+                onFont={(f) => setData((d) => ({ ...d, scriptFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, scriptSize: s }))}
+                min={14} max={100} placeholder="auto" />
+
+              <FontRow label="Album title" font={data.albumFont ?? "Cinzel"} size={data.albumSize ?? 44}
+                onFont={(f) => setData((d) => ({ ...d, albumFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, albumSize: s }))}
+                min={16} max={90} />
+
+              <FontRow label="New album text" font={data.newAlbumFont ?? "Cinzel"} size={data.newAlbumSize ?? 22}
+                onFont={(f) => setData((d) => ({ ...d, newAlbumFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, newAlbumSize: s }))}
+                min={10} max={60} />
+
+              <FontRow label="Coming soon" font={data.comingSoonFont ?? "Cinzel"} size={data.comingSoonSize ?? 54}
+                onFont={(f) => setData((d) => ({ ...d, comingSoonFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, comingSoonSize: s }))}
+                min={18} max={120} />
+
+              <FontRow label="Social handle" font={data.socialFont ?? "Cinzel"} size={data.socialSize ?? 20}
+                onFont={(f) => setData((d) => ({ ...d, socialFont: f }))}
+                onSize={(s) => setData((d) => ({ ...d, socialSize: s }))}
+                min={10} max={48} />
+            </div>
+
 
             <div className="pt-2">
               <p className="mb-2 text-xs uppercase tracking-widest text-[#a87a42]">Download</p>
@@ -351,5 +402,43 @@ function DlBtn({ label, onClick, busy, disabled }: { label: string; onClick: () 
     >
       {isBusy ? "..." : label}
     </Button>
+  );
+}
+
+function FontRow({ label, font, size, onFont, onSize, min, max, placeholder }: {
+  label: string; font: FontFamily; size: number;
+  onFont: (f: FontFamily) => void; onSize: (s: number) => void;
+  min: number; max: number; placeholder?: string;
+}) {
+  return (
+    <div className="space-y-1.5 border-t border-[#3a2410]/60 pt-2 first:border-0 first:pt-0">
+      <div className="text-[11px] text-[#c9a878]">{label}</div>
+      <div className="flex gap-1.5">
+        <select
+          value={font}
+          onChange={(e) => onFont(e.target.value as FontFamily)}
+          className="flex-1 rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1 text-[11px] text-[#e2c89a]"
+          style={{ fontFamily: `'${font}', serif` }}
+        >
+          {FONT_OPTIONS.map((f) => (
+            <option key={f} value={f} style={{ fontFamily: `'${f}', serif` }}>{f}</option>
+          ))}
+        </select>
+        <input
+          type="number"
+          value={size || ""}
+          placeholder={placeholder ?? String(min)}
+          min={0}
+          max={max}
+          onChange={(e) => {
+            const n = e.target.value === "" ? 0 : Number(e.target.value);
+            onSize(Number.isFinite(n) ? n : 0);
+          }}
+          className="w-16 rounded border border-[#3a2410] bg-[#0f0703] px-2 py-1 text-[11px] text-[#e2c89a]"
+        />
+      </div>
+      <Slider value={[size || min]} min={min} max={max} step={1}
+        onValueChange={(v) => onSize(v[0])} />
+    </div>
   );
 }
