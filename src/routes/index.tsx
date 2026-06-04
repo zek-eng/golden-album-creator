@@ -227,6 +227,22 @@ function Index() {
   );
 }
 
+function SliderRow({ label, value, min, max, step, onChange, suffix }: {
+  label: string; value: number; min: number; max: number; step: number;
+  onChange: (v: number[]) => void; suffix?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px] text-[#8a6a48]">
+        <span>{label}</span>
+        <span className="text-[#c9a878]">{value}{suffix ?? ""}</span>
+      </div>
+      <Slider value={[value]} min={min} max={max} step={step} onValueChange={onChange} />
+    </div>
+  );
+}
+
+
 function DebugTile({ label, src, checker }: { label: string; src: string | null; checker: boolean }) {
   return (
     <div className="space-y-1">
