@@ -16,14 +16,14 @@ export const DEFAULT_POSTER: PosterData = {
   socialHandle: "The_HarmonyTz",
 };
 
-// Poster canvas — taller to give footer / coming-soon breathing room
+// Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1780;
+export const POSTER_H = 1720;
 
-// Choir image area — generous gap from heading above and card below
+// Choir image area — tightened gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 540,
+  y: 460,
   w: POSTER_W - 140, // 940
   h: 720,
 };
