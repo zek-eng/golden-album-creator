@@ -311,7 +311,7 @@ export function buildPosterSVG(data: PosterData): string {
 
     <line x1="${cx - 220}" y1="${ruleY}" x2="${cx - 30}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
     <line x1="${cx + 30}"  y1="${ruleY}" x2="${cx + 220}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
-    <circle cx="${cx}" cy="${ruleY}" r="3.5" fill="url(#goldGrad)"/>
+    
   </g>
 
   <ellipse cx="${cx}" cy="${iy + ih - 20}" rx="${iw * 0.5}" ry="60" fill="url(#floorPool)"/>
