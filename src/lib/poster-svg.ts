@@ -224,7 +224,7 @@ export function buildPosterSVG(data: PosterData): string {
           filter="url(#goldGlow)">${escapeXml(main)}</text>
 
     ${script ? `<text x="${cx}" y="${scriptY}" text-anchor="middle"
-          font-family="'Allura', cursive" font-weight="400"
+          font-family="'Pinyon Script', 'Italianno', cursive" font-style="italic" font-weight="400"
           fill="url(#goldGrad)" font-size="${scriptSize}"
           filter="url(#goldGlow)">${escapeXml(script)}</text>` : ""}
 
