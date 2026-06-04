@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
-import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
+import { BG_PRESETS, resolveBgSource, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
 
 
 export const Route = createFileRoute("/")({
@@ -33,7 +33,7 @@ function Index() {
     let cancelled = false;
     (async () => {
       try {
-        const dataUrl = await urlToDataUrl(BG_PRESETS[0].src);
+        const dataUrl = await resolveBgSource(BG_PRESETS[0].src);
         if (!cancelled) {
           setActiveBg(BG_PRESETS[0].id);
           setData((d) => ({ ...d, bgImage: dataUrl }));
@@ -46,7 +46,7 @@ function Index() {
   const applyPreset = async (id: string) => {
     const preset = BG_PRESETS.find((p) => p.id === id);
     if (!preset) return;
-    const dataUrl = await urlToDataUrl(preset.src);
+    const dataUrl = await resolveBgSource(preset.src);
     setActiveBg(id);
     setData((d) => ({ ...d, bgImage: dataUrl }));
   };
