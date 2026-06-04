@@ -375,15 +375,15 @@ export function buildPosterSVG(data: PosterData): string {
   <rect x="28" y="28" width="${POSTER_W - 56}" height="${POSTER_H - 56}" rx="18" fill="none"
         stroke="url(#frameGrad)" stroke-width="1.1" opacity="0.5"/>
 
-  <!-- TITLE BLOCK — all Cinzel -->
+  <!-- TITLE BLOCK -->
   <g id="title">
     ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
+          font-family="'${titleFont}', serif" font-weight="400"
           fill="url(#goldGrad)" font-size="${prefixSize}" letter-spacing="24"
           filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
 
     <text x="${cx}" y="${mainY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="500"
+          font-family="'${titleFont}', serif" font-weight="500"
           fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(main)}</text>
 
@@ -395,7 +395,7 @@ export function buildPosterSVG(data: PosterData): string {
       <rect x="${tzCardX + 0.5}" y="${tzCardY + 0.5}" width="${tzCardW - 1}" height="${tzCardH - 1}" rx="${tzCardR}" ry="${tzCardR}"
             fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
       <text x="${cx}" y="${scriptY}" text-anchor="middle"
-            font-family="'Cinzel', serif" font-weight="400"
+            font-family="'${scriptFont}', serif" font-weight="400"
             fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="16"
             filter="url(#goldGlow)">${escapeXml(script)}</text>
     </g>` : ""}
@@ -420,25 +420,26 @@ export function buildPosterSVG(data: PosterData): string {
           fill="url(#glassTopGloss)" opacity="0.5"/>
     <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardW - 1}" height="${cardH - 1}" rx="${cardR}" ry="${cardR}"
           fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
-    <text x="${cx}" y="${cardY + cardH / 2 + 14}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="44" letter-spacing="10"
+    <text x="${cx}" y="${cardY + cardH / 2 + albumSize * 0.32}" text-anchor="middle"
+          font-family="'${albumFont}', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="${albumSize}" letter-spacing="10"
           filter="url(#goldGlow)">${escapeXml(data.albumTitle)}</text>
   </g>
 
   <g id="footer">
     <text x="${cx}" y="${newAlbumY}" text-anchor="middle"
-          fill="${theme.textSoft}" font-family="'Cinzel', serif" font-weight="400"
-          font-size="22" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
+          fill="${theme.textSoft}" font-family="'${newAlbumFont}', serif" font-weight="400"
+          font-size="${newAlbumSize}" letter-spacing="14">${escapeXml(data.newAlbumText)}</text>
     <line x1="${cx - 30}" y1="${newAlbumY + 18}" x2="${cx + 30}" y2="${newAlbumY + 18}" stroke="url(#goldLine)" stroke-width="1"/>
     <text x="${cx}" y="${comingSoonY}" text-anchor="middle"
-          font-family="'Cinzel', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="54" letter-spacing="18"
+          font-family="'${comingSoonFont}', serif" font-weight="400"
+          fill="url(#goldGrad)" font-size="${comingSoonSize}" letter-spacing="18"
           filter="url(#goldGlow)">${escapeXml(data.comingSoonText)}</text>
   </g>
 
   <g id="social" transform="translate(${cx} ${socialY})">
-    ${socialBlock(handle)}
+    ${socialBlock(handle, socialFont, socialSize)}
+
   </g>
 </svg>`;
 }
