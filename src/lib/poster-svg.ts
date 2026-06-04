@@ -44,14 +44,14 @@ export const DEFAULT_POSTER: PosterData = {
 
 // Poster canvas
 export const POSTER_W = 1080;
-export const POSTER_H = 1720;
+export const POSTER_H = 1620;
 
 // Choir image area — tight gap from heading above
 export const IMAGE_AREA = {
   x: 70,
-  y: 380,
+  y: 320,
   w: POSTER_W - 140, // 940
-  h: 760,
+  h: 720,
 };
 
 interface ThemePalette {
