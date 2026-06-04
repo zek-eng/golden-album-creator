@@ -27,9 +27,9 @@ export const DEFAULT_POSTER: PosterData = {
   socialHandle: "The_HarmonyTz",
   theme: "royal",
   bgImage: "",
-  bgBlur: 3,
-  bgOpacity: 0.94,
-  bgOverlay: 0.1,
+  bgBlur: 10,
+  bgOpacity: 0.45,
+  bgOverlay: 0.35,
   bgOffsetX: 0,
   bgOffsetY: 0,
   bgScale: 1.1,
@@ -193,9 +193,6 @@ export function buildPosterSVG(data: PosterData): string {
   const metalStops = theme.metal.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
   const glassEdgeStops = theme.glassEdge.map(s => `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`).join("");
   const frameStops = theme.frame.map(s => `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`).join("");
-  const hasNature = Boolean(data.bgImage);
-  const warmthOpacity = hasNature ? 0.2 : 1;
-  const ambientOpacity = hasNature ? 0.28 : 1;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cinzel', serif">
@@ -268,7 +265,7 @@ export function buildPosterSVG(data: PosterData): string {
 
     <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">${frameStops}</linearGradient>
 
-    <filter id="natureBlur" x="-140" y="-140" width="1360" height="2000" filterUnits="userSpaceOnUse">
+    <filter id="natureBlur" x="-10%" y="-10%" width="120%" height="120%">
       <feGaussianBlur stdDeviation="${Math.max(0, data.bgBlur ?? 10)}"/>
     </filter>
   </defs>
@@ -277,9 +274,9 @@ export function buildPosterSVG(data: PosterData): string {
   <g id="background">
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.base}"/>
     <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgGrad)"/>
-    ${hasNature ? renderNatureBackdrop(data, theme) : ""}
-    <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgWarmth)" opacity="${warmthOpacity}"/>
-    <ellipse cx="${cx}" cy="${iy + ih * 0.45}" rx="${iw * 0.55}" ry="${ih * 0.55}" fill="url(#ambientGlow)" opacity="${ambientOpacity}"/>
+    ${data.bgImage ? renderNatureBackdrop(data, theme) : ""}
+    <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#bgWarmth)"/>
+    <ellipse cx="${cx}" cy="${iy + ih * 0.45}" rx="${iw * 0.55}" ry="${ih * 0.55}" fill="url(#ambientGlow)"/>
   </g>
 
   <!-- BACKGROUND WATERMARK — Cinzel, 45° -->
@@ -384,10 +381,9 @@ function socialBlock(handle: string): string {
 }
 
 function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
-  const opacity = Math.min(1, Math.max(0.35, data.bgOpacity ?? 0.94));
-  const overlay = Math.min(0.55, Math.max(0, data.bgOverlay ?? 0.1));
+  const opacity = Math.min(1, Math.max(0, data.bgOpacity ?? 0.45));
+  const overlay = Math.min(1, Math.max(0, data.bgOverlay ?? 0.35));
   const scale = Math.min(1.6, Math.max(1, data.bgScale ?? 1.1));
-  const clearLayerOpacity = Math.min(0.28, opacity * 0.32);
   const ox = data.bgOffsetX ?? 0;
   const oy = data.bgOffsetY ?? 0;
   const w = POSTER_W * scale;
@@ -396,9 +392,6 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   const y = (POSTER_H - h) / 2 + oy;
   return `
     <g id="nature_backdrop">
-      <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
-             preserveAspectRatio="xMidYMid slice"
-              opacity="${clearLayerOpacity}"/>
       <image href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}"
              preserveAspectRatio="xMidYMid slice"
              opacity="${opacity}" filter="url(#natureBlur)"/>

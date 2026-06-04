@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { buildPosterSVG, DEFAULT_POSTER, type PosterData, type PosterTheme } from "@/lib/poster-svg";
 import { downloadSVG, downloadRaster, downloadPDF } from "@/lib/poster-export";
 import { removeImageBackground, fileToDataUrl, hasTransparency } from "@/lib/bg-remove";
-import { BG_PRESETS, resolveBgSource, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
+import { BG_PRESETS, urlToDataUrl, fileToDataUrl as anyFileToDataUrl } from "@/lib/bg-presets";
 
 
 export const Route = createFileRoute("/")({
@@ -33,7 +33,7 @@ function Index() {
     let cancelled = false;
     (async () => {
       try {
-        const dataUrl = await resolveBgSource(BG_PRESETS[0].src);
+        const dataUrl = await urlToDataUrl(BG_PRESETS[0].src);
         if (!cancelled) {
           setActiveBg(BG_PRESETS[0].id);
           setData((d) => ({ ...d, bgImage: dataUrl }));
@@ -46,7 +46,7 @@ function Index() {
   const applyPreset = async (id: string) => {
     const preset = BG_PRESETS.find((p) => p.id === id);
     if (!preset) return;
-    const dataUrl = await resolveBgSource(preset.src);
+    const dataUrl = await urlToDataUrl(preset.src);
     setActiveBg(id);
     setData((d) => ({ ...d, bgImage: dataUrl }));
   };
@@ -202,11 +202,11 @@ function Index() {
                   className="h-8 bg-[#0f0703] border-[#3a2410] text-[11px] text-[#e2c89a] file:text-[#c9a878]" />
               </div>
 
-              <SliderRow label="Blur" value={data.bgBlur ?? 3} min={0} max={24} step={1}
+              <SliderRow label="Blur" value={data.bgBlur ?? 10} min={0} max={40} step={1}
                 onChange={setNum("bgBlur")} />
-              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.94) * 100)} min={35} max={100} step={1}
+              <SliderRow label="Opacity" value={Math.round((data.bgOpacity ?? 0.45) * 100)} min={10} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOpacity: v[0] / 100 }))} suffix="%" />
-              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.1) * 100)} min={0} max={55} step={1}
+              <SliderRow label="Overlay darkness" value={Math.round((data.bgOverlay ?? 0.35) * 100)} min={0} max={90} step={1}
                 onChange={(v) => setData((d) => ({ ...d, bgOverlay: v[0] / 100 }))} suffix="%" />
               <SliderRow label="Scale" value={Math.round((data.bgScale ?? 1.1) * 100)} min={100} max={160} step={2}
                 onChange={(v) => setData((d) => ({ ...d, bgScale: v[0] / 100 }))} suffix="%" />
