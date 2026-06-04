@@ -422,43 +422,57 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
 
   const imgAttrs = `href="${data.bgImage}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"`;
 
-  const sideGradient = (id: string, side: "top" | "bottom") => {
-    const stops = side === "top"
-      ? `<stop offset="0%" stop-color="#fff"/><stop offset="55%" stop-color="#000"/><stop offset="100%" stop-color="#000"/>`
-      : `<stop offset="0%" stop-color="#000"/><stop offset="45%" stop-color="#000"/><stop offset="100%" stop-color="#fff"/>`;
+  // Region gradient: white (visible) inside chosen region, black outside.
+  // For "full" mode, no region mask needed.
+  const regionGradient = (id: string, mode: "top" | "bottom") => {
+    const stops = mode === "top"
+      ? `<stop offset="0%" stop-color="#fff"/><stop offset="50%" stop-color="#fff"/><stop offset="70%" stop-color="#000"/><stop offset="100%" stop-color="#000"/>`
+      : `<stop offset="0%" stop-color="#000"/><stop offset="30%" stop-color="#000"/><stop offset="50%" stop-color="#fff"/><stop offset="100%" stop-color="#fff"/>`;
     return `<linearGradient id="${id}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
   };
-  const blurMaskId = `bgBlurMask_${blurMode}`;
-  const opacityMaskId = `bgOpacityMask_${opacityMode}`;
 
   let defs = "";
-  if (blurMode !== "full" && blur > 0) {
-    defs += sideGradient(`${blurMaskId}_grad`, blurMode as "top" | "bottom");
-    defs += `<mask id="${blurMaskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${POSTER_W}" height="${POSTER_H}">
-      <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${blurMaskId}_grad)"/>
-    </mask>`;
-  }
-  if (opacityMode !== "full") {
-    defs += sideGradient(`${opacityMaskId}_grad`, opacityMode as "top" | "bottom");
-    defs += `<mask id="${opacityMaskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${POSTER_W}" height="${POSTER_H}">
-      <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${opacityMaskId}_grad)"/>
-    </mask>`;
+
+  // --- Independent opacity layer ---
+  // Sharp image rendered at full opacity always; opacity reduction applied via
+  // a fade-to-background rect over the chosen region (or whole poster).
+  let opacityFadeLayer = "";
+  const fade = 1 - opacity; // amount of bg to mix in
+  if (fade > 0.001) {
+    if (opacityMode === "full") {
+      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.bg}" opacity="${fade}"/>`;
+    } else {
+      const gid = `bgOpFade_${opacityMode}`;
+      const stops = opacityMode === "top"
+        ? `<stop offset="0%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
+           <stop offset="50%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
+           <stop offset="80%" stop-color="${theme.bg}" stop-opacity="0"/>
+           <stop offset="100%" stop-color="${theme.bg}" stop-opacity="0"/>`
+        : `<stop offset="0%" stop-color="${theme.bg}" stop-opacity="0"/>
+           <stop offset="20%" stop-color="${theme.bg}" stop-opacity="0"/>
+           <stop offset="50%" stop-color="${theme.bg}" stop-opacity="${fade}"/>
+           <stop offset="100%" stop-color="${theme.bg}" stop-opacity="${fade}"/>`;
+      defs += `<linearGradient id="${gid}" x1="0%" y1="0%" x2="0%" y2="100%">${stops}</linearGradient>`;
+      opacityFadeLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${gid})"/>`;
+    }
   }
 
-  let imageLayer: string;
-  if (blur === 0 || blurMode === "full") {
-    const filterAttr = blur > 0 ? ` filter="url(#natureBlur)"` : "";
-    imageLayer = `<image ${imgAttrs} opacity="${opacity}"${filterAttr}/>`;
-  } else {
-    imageLayer = `
-      <image ${imgAttrs} opacity="${opacity}"/>
-      <image ${imgAttrs} opacity="${opacity}" filter="url(#natureBlur)" mask="url(#${blurMaskId})"/>`;
+  // --- Independent blur layer ---
+  let blurLayer = "";
+  if (blur > 0) {
+    if (blurMode === "full") {
+      blurLayer = `<image ${imgAttrs} filter="url(#natureBlur)"/>`;
+    } else {
+      const blurMaskId = `bgBlurMask_${blurMode}`;
+      defs += regionGradient(`${blurMaskId}_grad`, blurMode as "top" | "bottom");
+      defs += `<mask id="${blurMaskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${POSTER_W}" height="${POSTER_H}">
+        <rect width="${POSTER_W}" height="${POSTER_H}" fill="url(#${blurMaskId}_grad)"/>
+      </mask>`;
+      blurLayer = `<image ${imgAttrs} filter="url(#natureBlur)" mask="url(#${blurMaskId})"/>`;
+    }
   }
 
-  const imageGroup = opacityMode === "full"
-    ? imageLayer
-    : `<g mask="url(#${opacityMaskId})">${imageLayer}</g>`;
-
+  // --- Independent overlay layer ---
   let overlayLayer: string;
   if (overlayMode === "full") {
     overlayLayer = `<rect width="${POSTER_W}" height="${POSTER_H}" fill="${theme.natureOverlay}" opacity="${overlay}"/>`;
@@ -478,7 +492,9 @@ function renderNatureBackdrop(data: PosterData, theme: ThemePalette): string {
   return `
     <defs>${defs}</defs>
     <g id="nature_backdrop">
-      ${imageGroup}
+      <image ${imgAttrs}/>
+      ${blurLayer}
+      ${opacityFadeLayer}
       ${overlayLayer}
     </g>
   `;
