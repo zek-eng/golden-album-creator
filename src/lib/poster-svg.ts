@@ -220,15 +220,17 @@ function splitName(name: string) {
 
 export function buildPosterSVG(data: PosterData): string {
   const theme = THEMES[data.theme ?? "milk"];
-  const { prefix, main, script } = splitName(data.choirName);
-  const mainLen = main.length || 1;
-  const autoMain = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
-  const mainSize = data.titleSize && data.titleSize > 0 ? data.titleSize : autoMain;
-  const scriptSize = data.scriptSize && data.scriptSize > 0 ? data.scriptSize : Math.round(mainSize * 0.62);
-  const prefixSize = Math.round(mainSize * 0.36);
+  const { main } = splitName(data.choirName);
 
   const titleFont = data.titleFont ?? "Cinzel";
-  const scriptFont = data.scriptFont ?? "Cinzel";
+  const subtitleFont = data.subtitleFont ?? "Cinzel";
+  const logoTitle = (data.logoTitle ?? "THE HARMONY").toUpperCase();
+  const logoSubtitle = (data.logoSubtitle ?? "TANZANIA").toUpperCase();
+  const logoScale = Math.min(1.8, Math.max(0.5, data.logoScale ?? 1));
+  const logoOffsetY = data.logoOffsetY ?? 0;
+  const logoTitleSize = data.titleSize && data.titleSize > 0 ? data.titleSize : 38;
+  const logoSubtitleSize = data.subtitleSize && data.subtitleSize > 0 ? data.subtitleSize : 16;
+
   const albumFont = data.albumFont ?? "Cinzel";
   const albumSize = data.albumSize && data.albumSize > 0 ? data.albumSize : 44;
   const newAlbumFont = data.newAlbumFont ?? "Cinzel";
