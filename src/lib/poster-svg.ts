@@ -389,6 +389,16 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="55%"  stop-color="#000" stop-opacity="0.28"/>
       <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
+
+    <!-- Logo icon mask: white parts of the PNG become visible, transparent parts hidden.
+         A rect filled with currentColor is masked through it so the icon tints to the theme color. -->
+    <mask id="harmonyIconMask" maskUnits="userSpaceOnUse" x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}">
+      <rect x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}" fill="black"/>
+      <image href="${HARMONY_ICON_DATA_URL}"
+             x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
+             preserveAspectRatio="xMidYMid meet"
+             style="filter: invert(1) brightness(2);"/>
+    </mask>
   </defs>
 
   <!-- BACKGROUND -->
