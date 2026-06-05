@@ -163,6 +163,7 @@ const THEMES: Record<PosterTheme, ThemePalette> = {
     ],
     textSoft: "#ffffff",
     natureOverlay: "#f4ebdc",
+    titleColor: "#1a3a6e",
   },
   ocean: {
     base: "#02080f",
@@ -198,6 +199,7 @@ const THEMES: Record<PosterTheme, ThemePalette> = {
     ],
     textSoft: "#a8c8d6",
     natureOverlay: "#02080f",
+    titleColor: "#f3d28a",
   },
 };
 
