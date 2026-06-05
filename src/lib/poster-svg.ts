@@ -390,10 +390,13 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
 
-    <!-- Logo icon tint: replaces all opaque pixels of the PNG with the theme title color -->
+    <!-- Logo icon tint: remaps any RGB to the theme title color while preserving alpha. -->
     <filter id="harmonyTint" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feFlood flood-color="${theme.titleColor}" result="flood"/>
-      <feComposite in="flood" in2="SourceGraphic" operator="in"/>
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 ${hexToMatrix(theme.titleColor).r}
+        0 0 0 0 ${hexToMatrix(theme.titleColor).g}
+        0 0 0 0 ${hexToMatrix(theme.titleColor).b}
+        0 0 0 1 0"/>
     </filter>
   </defs>
 
