@@ -390,13 +390,11 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
 
-    <!-- Logo icon mask: white pixels reveal, transparent hide. A rect filled with
-         currentColor (theme.titleColor) is masked through it so the icon tints to theme. -->
-    <mask id="harmonyIconMask" maskUnits="userSpaceOnUse" x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}">
-      <image href="${HARMONY_ICON_DATA_URL}"
-             x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
-             preserveAspectRatio="xMidYMid meet"/>
-    </mask>
+    <!-- Logo icon tint: replaces all opaque pixels of the PNG with the theme title color -->
+    <filter id="harmonyTint" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feFlood flood-color="${theme.titleColor}" result="flood"/>
+      <feComposite in="flood" in2="SourceGraphic" operator="in"/>
+    </filter>
   </defs>
 
   <!-- BACKGROUND -->
@@ -430,8 +428,9 @@ export function buildPosterSVG(data: PosterData): string {
 
   <!-- LOGO BLOCK (brand mark) -->
   <g id="logo">
-    <rect class="harmony-icon" x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
-          fill="${theme.titleColor}" mask="url(#harmonyIconMask)"/>
+    <image class="harmony-icon" href="${HARMONY_ICON_DATA_URL}"
+           x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
+           preserveAspectRatio="xMidYMid meet" filter="url(#harmonyTint)"/>
 
     <text class="harmony-title" x="${logoTextX}" y="${titleBaseY}"
           font-family="'${titleFont}', serif" font-weight="700"
