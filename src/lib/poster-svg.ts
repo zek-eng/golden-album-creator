@@ -274,17 +274,20 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title (tighter top spacing toward image)
-  const prefixY = 80;
-  const mainY = prefix ? prefixY + mainSize + 16 : 130;
-  // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
-  const tzCardW = Math.max(140, scriptSize * 3.6);
-  const tzCardH = Math.round(scriptSize * 1.9);
-  const tzCardX = cx - tzCardW / 2;
-  const tzCardY = mainY + 20;
-  const tzCardR = 18;
-  const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
-  const ruleY = tzCardY + tzCardH + 18;
+  // ---- LOGO BLOCK LAYOUT ----
+  const logoTopY = 50 + logoOffsetY;
+  const iconH = Math.max(40, Math.round(logoTitleSize * 2.2 * logoScale));
+  const iconW = Math.round(iconH * (HARMONY_ICON_W / HARMONY_ICON_H));
+  const titleApproxW = Math.max(60, logoTitle.length * logoTitleSize * 0.58);
+  const subApproxW = Math.max(60, logoSubtitle.length * logoSubtitleSize * 0.7 + 90);
+  const textApproxW = Math.max(titleApproxW, subApproxW);
+  const logoGap = Math.round(14 * logoScale);
+  const logoTotalW = iconW + logoGap + textApproxW;
+  const logoStartX = cx - logoTotalW / 2;
+  const logoTextX = logoStartX + iconW + logoGap;
+  const titleBaseY = logoTopY + iconH * 0.5 + logoTitleSize * 0.15;
+  const subBaseY = titleBaseY + logoSubtitleSize * 1.7;
+  const ruleY = logoTopY + iconH + 10;
 
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
