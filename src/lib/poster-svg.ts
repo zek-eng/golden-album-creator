@@ -430,9 +430,8 @@ export function buildPosterSVG(data: PosterData): string {
 
   <!-- LOGO BLOCK (brand mark) -->
   <g id="logo">
-    <image id="logo-icon" href="${HARMONY_ICON_DATA_URL}"
-           x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
-           preserveAspectRatio="xMidYMid meet"/>
+    <rect class="harmony-icon" x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
+          fill="${theme.titleColor}" mask="url(#harmonyIconMask)"/>
 
     <text class="harmony-title" x="${logoTextX}" y="${titleBaseY}"
           font-family="'${titleFont}', serif" font-weight="700"
