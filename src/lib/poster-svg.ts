@@ -412,34 +412,33 @@ export function buildPosterSVG(data: PosterData): string {
   ` : ""}
 
 
-  <!-- TITLE BLOCK -->
-  <g id="title">
-    ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
-          font-family="'${titleFont}', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="${prefixSize}" letter-spacing="24"
-          filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
+  <!-- LOGO BLOCK (brand mark) -->
+  <g id="logo">
+    <image id="logo-icon" href="${HARMONY_ICON_DATA_URL}"
+           x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
+           preserveAspectRatio="xMidYMid meet"/>
 
-    <text x="${cx}" y="${mainY}" text-anchor="middle"
-          font-family="'${titleFont}', serif" font-weight="500"
-          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="10"
-          filter="url(#goldGlow)">${escapeXml(main)}</text>
+    <text class="harmony-title" x="${logoTextX}" y="${titleBaseY}"
+          font-family="'${titleFont}', serif" font-weight="700"
+          font-size="${logoTitleSize}" letter-spacing="${Math.round(logoTitleSize * 0.06)}"
+          dominant-baseline="alphabetic">${escapeXml(logoTitle)}</text>
 
-    ${script ? `<g id="tz_card" filter="url(#cardShadow)">
-      <rect x="${tzCardX}" y="${tzCardY}" width="${tzCardW}" height="${tzCardH}" rx="${tzCardR}" ry="${tzCardR}"
-            fill="url(#glassFill)"/>
-      <rect x="${tzCardX + 1}" y="${tzCardY + 1}" width="${tzCardW - 2}" height="${tzCardH * 0.45}" rx="${tzCardR - 2}" ry="${tzCardR - 2}"
-            fill="url(#glassTopGloss)" opacity="0.5"/>
-      <rect x="${tzCardX + 0.5}" y="${tzCardY + 0.5}" width="${tzCardW - 1}" height="${tzCardH - 1}" rx="${tzCardR}" ry="${tzCardR}"
-            fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
-      <text x="${cx}" y="${scriptY}" text-anchor="middle"
-            font-family="'${scriptFont}', serif" font-weight="400"
-            fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="16"
-            filter="url(#goldGlow)">${escapeXml(script)}</text>
-    </g>` : ""}
-
-    <line x1="${cx - 220}" y1="${ruleY}" x2="${cx - 30}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
-    <line x1="${cx + 30}"  y1="${ruleY}" x2="${cx + 220}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
-    
+    <g id="logo-subtitle-row" transform="translate(${logoTextX} ${subBaseY})">
+      <line x1="0" y1="-${Math.round(logoSubtitleSize * 0.32)}" x2="${Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.32)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <line x1="0" y1="-${Math.round(logoSubtitleSize * 0.05)}" x2="${Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.05)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <text class="harmony-subtitle" x="${Math.round(subApproxW * 0.18) + 14}" y="0"
+            font-family="'${subtitleFont}', serif" font-weight="600"
+            font-size="${logoSubtitleSize}" letter-spacing="${Math.round(logoSubtitleSize * 0.25)}"
+            dominant-baseline="alphabetic">${escapeXml(logoSubtitle)}</text>
+      <line x1="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14}" y1="-${Math.round(logoSubtitleSize * 0.32)}"
+            x2="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14 + Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.32)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <line x1="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14}" y1="-${Math.round(logoSubtitleSize * 0.05)}"
+            x2="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14 + Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.05)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+    </g>
   </g>
 
 
