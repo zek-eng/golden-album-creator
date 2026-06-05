@@ -125,6 +125,7 @@ interface ThemePalette {
   frame: { offset: string; color: string; opacity: number }[];
   textSoft: string;
   natureOverlay: string;
+  titleColor: string; // CSS color used by .harmony-title / .harmony-subtitle
 }
 
 const THEMES: Record<PosterTheme, ThemePalette> = {
