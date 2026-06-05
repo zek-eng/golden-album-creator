@@ -1,3 +1,5 @@
+import { HARMONY_ICON_DATA_URL, HARMONY_ICON_W, HARMONY_ICON_H } from "./harmony-icon";
+
 export type PosterTheme = "milk" | "ocean";
 export type GradientMode = "full" | "top" | "bottom";
 
@@ -16,14 +18,18 @@ export const FONT_OPTIONS = [
 export type FontFamily = (typeof FONT_OPTIONS)[number];
 
 export interface PosterData {
-  choirImage: string; // transparent PNG (background removed)
+  choirImage: string;
   choirName: string;
+  // Logo (brand mark replacing the heading)
+  logoTitle?: string;
+  logoSubtitle?: string;
+  logoScale?: number;
+  logoOffsetY?: number;
   albumTitle: string;
   newAlbumText: string;
   comingSoonText: string;
   socialHandle?: string;
   theme?: PosterTheme;
-  // Nature backdrop (data URL preferred so export rasterizes correctly)
   bgImage?: string;
   bgBlur?: number;
   bgOpacity?: number;
@@ -34,15 +40,16 @@ export interface PosterData {
   bgBlurRegions?: GradientMode[];
   bgOpacityRegions?: GradientMode[];
   bgOverlayRegions?: GradientMode[];
-  // Choir image position & scale (within the image area)
-  imgOffsetX?: number; // -400..400 px
-  imgOffsetY?: number; // -400..400 px
-  imgScale?: number;   // 0.4..2
-  // Per-section fonts (family) and font sizes (px in SVG units)
-  titleFont?: FontFamily;
-  titleSize?: number;     // 0 = auto
+  imgOffsetX?: number;
+  imgOffsetY?: number;
+  imgScale?: number;
+  titleFont?: FontFamily;       // .harmony-title font
+  titleSize?: number;           // 0 = auto
+  subtitleFont?: FontFamily;    // .harmony-subtitle font
+  subtitleSize?: number;        // 0 = auto
+  // legacy (kept for compat, unused now)
   scriptFont?: FontFamily;
-  scriptSize?: number;    // 0 = auto
+  scriptSize?: number;
   albumFont?: FontFamily;
   albumSize?: number;
   newAlbumFont?: FontFamily;
@@ -56,6 +63,10 @@ export interface PosterData {
 export const DEFAULT_POSTER: PosterData = {
   choirImage: "",
   choirName: "THE HARMONY TZ",
+  logoTitle: "THE HARMONY",
+  logoSubtitle: "TANZANIA",
+  logoScale: 1,
+  logoOffsetY: 0,
   albumTitle: "MFALME WA WAFALME",
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
@@ -76,8 +87,8 @@ export const DEFAULT_POSTER: PosterData = {
   imgScale: 1,
   titleFont: "Cinzel",
   titleSize: 0,
-  scriptFont: "Cinzel",
-  scriptSize: 0,
+  subtitleFont: "Cinzel",
+  subtitleSize: 0,
   albumFont: "Cinzel",
   albumSize: 44,
   newAlbumFont: "Cinzel",
@@ -114,6 +125,7 @@ interface ThemePalette {
   frame: { offset: string; color: string; opacity: number }[];
   textSoft: string;
   natureOverlay: string;
+  titleColor: string; // CSS color used by .harmony-title / .harmony-subtitle
 }
 
 const THEMES: Record<PosterTheme, ThemePalette> = {
@@ -151,6 +163,7 @@ const THEMES: Record<PosterTheme, ThemePalette> = {
     ],
     textSoft: "#ffffff",
     natureOverlay: "#f4ebdc",
+    titleColor: "#1a3a6e",
   },
   ocean: {
     base: "#02080f",
@@ -186,6 +199,7 @@ const THEMES: Record<PosterTheme, ThemePalette> = {
     ],
     textSoft: "#a8c8d6",
     natureOverlay: "#02080f",
+    titleColor: "#f3d28a",
   },
 };
 
@@ -206,15 +220,17 @@ function splitName(name: string) {
 
 export function buildPosterSVG(data: PosterData): string {
   const theme = THEMES[data.theme ?? "milk"];
-  const { prefix, main, script } = splitName(data.choirName);
-  const mainLen = main.length || 1;
-  const autoMain = Math.min(52, Math.max(28, Math.floor(940 / Math.max(mainLen, 5) * 0.65)));
-  const mainSize = data.titleSize && data.titleSize > 0 ? data.titleSize : autoMain;
-  const scriptSize = data.scriptSize && data.scriptSize > 0 ? data.scriptSize : Math.round(mainSize * 0.62);
-  const prefixSize = Math.round(mainSize * 0.36);
+  const { main } = splitName(data.choirName);
 
   const titleFont = data.titleFont ?? "Cinzel";
-  const scriptFont = data.scriptFont ?? "Cinzel";
+  const subtitleFont = data.subtitleFont ?? "Cinzel";
+  const logoTitle = (data.logoTitle ?? "THE HARMONY").toUpperCase();
+  const logoSubtitle = (data.logoSubtitle ?? "TANZANIA").toUpperCase();
+  const logoScale = Math.min(1.8, Math.max(0.5, data.logoScale ?? 1));
+  const logoOffsetY = data.logoOffsetY ?? 0;
+  const logoTitleSize = data.titleSize && data.titleSize > 0 ? data.titleSize : 38;
+  const logoSubtitleSize = data.subtitleSize && data.subtitleSize > 0 ? data.subtitleSize : 16;
+
   const albumFont = data.albumFont ?? "Cinzel";
   const albumSize = data.albumSize && data.albumSize > 0 ? data.albumSize : 44;
   const newAlbumFont = data.newAlbumFont ?? "Cinzel";
@@ -258,17 +274,20 @@ export function buildPosterSVG(data: PosterData): string {
 
   const handle = data.socialHandle?.trim() || "The_HarmonyTz";
 
-  // Title (tighter top spacing toward image)
-  const prefixY = 80;
-  const mainY = prefix ? prefixY + mainSize + 16 : 130;
-  // TZ glass card sits below HARMONY (mirrors album card style, scaled down)
-  const tzCardW = Math.max(140, scriptSize * 3.6);
-  const tzCardH = Math.round(scriptSize * 1.9);
-  const tzCardX = cx - tzCardW / 2;
-  const tzCardY = mainY + 20;
-  const tzCardR = 18;
-  const scriptY = tzCardY + tzCardH / 2 + scriptSize * 0.35;
-  const ruleY = tzCardY + tzCardH + 18;
+  // ---- LOGO BLOCK LAYOUT ----
+  const logoTopY = 50 + logoOffsetY;
+  const iconH = Math.max(40, Math.round(logoTitleSize * 2.2 * logoScale));
+  const iconW = Math.round(iconH * (HARMONY_ICON_W / HARMONY_ICON_H));
+  const titleApproxW = Math.max(60, logoTitle.length * logoTitleSize * 0.58);
+  const subApproxW = Math.max(60, logoSubtitle.length * logoSubtitleSize * 0.7 + 90);
+  const textApproxW = Math.max(titleApproxW, subApproxW);
+  const logoGap = Math.round(14 * logoScale);
+  const logoTotalW = iconW + logoGap + textApproxW;
+  const logoStartX = cx - logoTotalW / 2;
+  const logoTextX = logoStartX + iconW + logoGap;
+  const titleBaseY = logoTopY + iconH * 0.5 + logoTitleSize * 0.15;
+  const subBaseY = titleBaseY + logoSubtitleSize * 1.7;
+  const ruleY = logoTopY + iconH + 10;
 
 
   const gradStops = theme.grad.map(s => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join("");
@@ -279,7 +298,15 @@ export function buildPosterSVG(data: PosterData): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${POSTER_W} ${POSTER_H}" width="${POSTER_W}" height="${POSTER_H}" font-family="'Cinzel', serif">
   <defs>
-    <style type="text/css"><![CDATA[text{text-transform:none!important}]]></style>
+    <style type="text/css"><![CDATA[
+      :root { --poster-title-color: ${theme.titleColor}; }
+      svg { color: ${theme.titleColor}; }
+      text { text-transform: none !important; }
+      .harmony-title, .harmony-subtitle {
+        fill: var(--poster-title-color, currentColor);
+      }
+      .harmony-subtitle-rule { stroke: var(--poster-title-color, currentColor); }
+    ]]></style>
     <radialGradient id="bgGrad" cx="50%" cy="30%" r="85%">${gradStops}</radialGradient>
     <linearGradient id="bgWarmth" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"  stop-color="${theme.warmthTop}" stop-opacity="0.35"/>
@@ -393,34 +420,33 @@ export function buildPosterSVG(data: PosterData): string {
   ` : ""}
 
 
-  <!-- TITLE BLOCK -->
-  <g id="title">
-    ${prefix ? `<text x="${cx}" y="${prefixY}" text-anchor="middle"
-          font-family="'${titleFont}', serif" font-weight="400"
-          fill="url(#goldGrad)" font-size="${prefixSize}" letter-spacing="24"
-          filter="url(#goldGlow)">${escapeXml(prefix)}</text>` : ""}
+  <!-- LOGO BLOCK (brand mark) -->
+  <g id="logo">
+    <image id="logo-icon" href="${HARMONY_ICON_DATA_URL}"
+           x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
+           preserveAspectRatio="xMidYMid meet"/>
 
-    <text x="${cx}" y="${mainY}" text-anchor="middle"
-          font-family="'${titleFont}', serif" font-weight="500"
-          fill="url(#goldGrad)" font-size="${mainSize}" letter-spacing="10"
-          filter="url(#goldGlow)">${escapeXml(main)}</text>
+    <text class="harmony-title" x="${logoTextX}" y="${titleBaseY}"
+          font-family="'${titleFont}', serif" font-weight="700"
+          font-size="${logoTitleSize}" letter-spacing="${Math.round(logoTitleSize * 0.06)}"
+          dominant-baseline="alphabetic">${escapeXml(logoTitle)}</text>
 
-    ${script ? `<g id="tz_card" filter="url(#cardShadow)">
-      <rect x="${tzCardX}" y="${tzCardY}" width="${tzCardW}" height="${tzCardH}" rx="${tzCardR}" ry="${tzCardR}"
-            fill="url(#glassFill)"/>
-      <rect x="${tzCardX + 1}" y="${tzCardY + 1}" width="${tzCardW - 2}" height="${tzCardH * 0.45}" rx="${tzCardR - 2}" ry="${tzCardR - 2}"
-            fill="url(#glassTopGloss)" opacity="0.5"/>
-      <rect x="${tzCardX + 0.5}" y="${tzCardY + 0.5}" width="${tzCardW - 1}" height="${tzCardH - 1}" rx="${tzCardR}" ry="${tzCardR}"
-            fill="none" stroke="url(#glassEdge)" stroke-width="1.2"/>
-      <text x="${cx}" y="${scriptY}" text-anchor="middle"
-            font-family="'${scriptFont}', serif" font-weight="400"
-            fill="url(#goldGrad)" font-size="${scriptSize}" letter-spacing="16"
-            filter="url(#goldGlow)">${escapeXml(script)}</text>
-    </g>` : ""}
-
-    <line x1="${cx - 220}" y1="${ruleY}" x2="${cx - 30}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
-    <line x1="${cx + 30}"  y1="${ruleY}" x2="${cx + 220}" y2="${ruleY}" stroke="url(#goldLine)" stroke-width="1"/>
-    
+    <g id="logo-subtitle-row" transform="translate(${logoTextX} ${subBaseY})">
+      <line x1="0" y1="-${Math.round(logoSubtitleSize * 0.32)}" x2="${Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.32)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <line x1="0" y1="-${Math.round(logoSubtitleSize * 0.05)}" x2="${Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.05)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <text class="harmony-subtitle" x="${Math.round(subApproxW * 0.18) + 14}" y="0"
+            font-family="'${subtitleFont}', serif" font-weight="600"
+            font-size="${logoSubtitleSize}" letter-spacing="${Math.round(logoSubtitleSize * 0.25)}"
+            dominant-baseline="alphabetic">${escapeXml(logoSubtitle)}</text>
+      <line x1="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14}" y1="-${Math.round(logoSubtitleSize * 0.32)}"
+            x2="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14 + Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.32)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+      <line x1="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14}" y1="-${Math.round(logoSubtitleSize * 0.05)}"
+            x2="${Math.round(subApproxW * 0.18) + 14 + logoSubtitle.length * logoSubtitleSize * 0.7 + 14 + Math.round(subApproxW * 0.18)}" y2="-${Math.round(logoSubtitleSize * 0.05)}"
+            stroke="currentColor" stroke-width="1" class="harmony-subtitle-rule" opacity="0.9"/>
+    </g>
   </g>
 
 

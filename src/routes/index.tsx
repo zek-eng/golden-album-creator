@@ -249,28 +249,36 @@ function Index() {
 
   const TextPanel = (
     <Section>
-      <Field label="Choir Name" value={data.choirName} onChange={update("choirName")} />
+      <Field label="Logo Title" value={data.logoTitle ?? ""} onChange={update("logoTitle")} />
+      <Field label="Logo Subtitle" value={data.logoSubtitle ?? ""} onChange={update("logoSubtitle")} />
       <Field label="Album Title" value={data.albumTitle} onChange={update("albumTitle")} />
       <Field label="New Album Text" value={data.newAlbumText} onChange={update("newAlbumText")} />
       <Field label="Coming Soon Text" value={data.comingSoonText} onChange={update("comingSoonText")} />
       <Field label="Social Handle" value={data.socialHandle ?? ""} onChange={update("socialHandle")} />
+      <div className="space-y-3 rounded-md border border-[#3a2410] bg-black/30 p-3">
+        <p className="text-xs uppercase tracking-widest text-[#a87a42]">Logo Size & Position</p>
+        <SliderRow label="Scale" value={Math.round((data.logoScale ?? 1) * 100)} min={50} max={180} step={2}
+          onChange={(v) => setData((d) => ({ ...d, logoScale: v[0] / 100 }))} suffix="%" />
+        <SliderRow label="Offset Y" value={data.logoOffsetY ?? 0} min={-40} max={120} step={2}
+          onChange={setNum("logoOffsetY")} />
+      </div>
     </Section>
   );
 
   const TypographyPanel = (
     <Section>
       <Accordion type="multiple" className="space-y-2">
-        <ToolGroup value="t-title" title="Title (Choir name)">
+        <ToolGroup value="t-title" title="Logo title (THE HARMONY)">
           <FontRow font={data.titleFont ?? "Cinzel"} size={data.titleSize ?? 0}
             onFont={(f) => setData((d) => ({ ...d, titleFont: f }))}
             onSize={(s) => setData((d) => ({ ...d, titleSize: s }))}
-            min={18} max={120} placeholder="auto" />
+            min={18} max={80} placeholder="auto" />
         </ToolGroup>
-        <ToolGroup value="t-script" title="Script (last word)">
-          <FontRow font={data.scriptFont ?? "Cinzel"} size={data.scriptSize ?? 0}
-            onFont={(f) => setData((d) => ({ ...d, scriptFont: f }))}
-            onSize={(s) => setData((d) => ({ ...d, scriptSize: s }))}
-            min={14} max={100} placeholder="auto" />
+        <ToolGroup value="t-subtitle" title="Logo subtitle (TANZANIA)">
+          <FontRow font={data.subtitleFont ?? "Cinzel"} size={data.subtitleSize ?? 0}
+            onFont={(f) => setData((d) => ({ ...d, subtitleFont: f }))}
+            onSize={(s) => setData((d) => ({ ...d, subtitleSize: s }))}
+            min={10} max={40} placeholder="auto" />
         </ToolGroup>
         <ToolGroup value="t-album" title="Album title">
           <FontRow font={data.albumFont ?? "Cinzel"} size={data.albumSize ?? 44}
