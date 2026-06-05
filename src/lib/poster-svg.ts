@@ -18,14 +18,18 @@ export const FONT_OPTIONS = [
 export type FontFamily = (typeof FONT_OPTIONS)[number];
 
 export interface PosterData {
-  choirImage: string; // transparent PNG (background removed)
+  choirImage: string;
   choirName: string;
+  // Logo (brand mark replacing the heading)
+  logoTitle?: string;
+  logoSubtitle?: string;
+  logoScale?: number;
+  logoOffsetY?: number;
   albumTitle: string;
   newAlbumText: string;
   comingSoonText: string;
   socialHandle?: string;
   theme?: PosterTheme;
-  // Nature backdrop (data URL preferred so export rasterizes correctly)
   bgImage?: string;
   bgBlur?: number;
   bgOpacity?: number;
@@ -36,15 +40,16 @@ export interface PosterData {
   bgBlurRegions?: GradientMode[];
   bgOpacityRegions?: GradientMode[];
   bgOverlayRegions?: GradientMode[];
-  // Choir image position & scale (within the image area)
-  imgOffsetX?: number; // -400..400 px
-  imgOffsetY?: number; // -400..400 px
-  imgScale?: number;   // 0.4..2
-  // Per-section fonts (family) and font sizes (px in SVG units)
-  titleFont?: FontFamily;
-  titleSize?: number;     // 0 = auto
+  imgOffsetX?: number;
+  imgOffsetY?: number;
+  imgScale?: number;
+  titleFont?: FontFamily;       // .harmony-title font
+  titleSize?: number;           // 0 = auto
+  subtitleFont?: FontFamily;    // .harmony-subtitle font
+  subtitleSize?: number;        // 0 = auto
+  // legacy (kept for compat, unused now)
   scriptFont?: FontFamily;
-  scriptSize?: number;    // 0 = auto
+  scriptSize?: number;
   albumFont?: FontFamily;
   albumSize?: number;
   newAlbumFont?: FontFamily;
@@ -58,6 +63,10 @@ export interface PosterData {
 export const DEFAULT_POSTER: PosterData = {
   choirImage: "",
   choirName: "THE HARMONY TZ",
+  logoTitle: "THE HARMONY",
+  logoSubtitle: "TANZANIA",
+  logoScale: 1,
+  logoOffsetY: 0,
   albumTitle: "MFALME WA WAFALME",
   newAlbumText: "NEW ALBUM",
   comingSoonText: "COMING SOON",
@@ -78,8 +87,8 @@ export const DEFAULT_POSTER: PosterData = {
   imgScale: 1,
   titleFont: "Cinzel",
   titleSize: 0,
-  scriptFont: "Cinzel",
-  scriptSize: 0,
+  subtitleFont: "Cinzel",
+  subtitleSize: 0,
   albumFont: "Cinzel",
   albumSize: 44,
   newAlbumFont: "Cinzel",
