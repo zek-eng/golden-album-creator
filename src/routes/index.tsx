@@ -366,11 +366,12 @@ function Index() {
           {/* Poster preview — primary on mobile */}
           <section className="rounded-lg border border-[#3a2410] bg-black/40 p-3 lg:p-4 lg:order-1 order-1">
             <div className="mx-auto w-full max-w-[560px]">
-              <img
-                src={svgDataUrl}
-                alt="Poster preview"
-                className="h-auto w-full rounded shadow-2xl"
+              <div
+                role="img"
+                aria-label="Poster preview"
+                className="h-auto w-full rounded shadow-2xl overflow-hidden [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
                 style={{ aspectRatio: "1080 / 1560" }}
+                dangerouslySetInnerHTML={{ __html: svg }}
               />
             </div>
           </section>

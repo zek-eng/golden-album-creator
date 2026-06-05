@@ -389,6 +389,15 @@ export function buildPosterSVG(data: PosterData): string {
       <stop offset="55%"  stop-color="#000" stop-opacity="0.28"/>
       <stop offset="100%" stop-color="#000" stop-opacity="0"/>
     </linearGradient>
+
+    <!-- Logo icon tint: remaps any RGB to the theme title color while preserving alpha. -->
+    <filter id="harmonyTint" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="
+        0 0 0 0 ${hexToMatrix(theme.titleColor).r}
+        0 0 0 0 ${hexToMatrix(theme.titleColor).g}
+        0 0 0 0 ${hexToMatrix(theme.titleColor).b}
+        0 0 0 1 0"/>
+    </filter>
   </defs>
 
   <!-- BACKGROUND -->
@@ -422,9 +431,9 @@ export function buildPosterSVG(data: PosterData): string {
 
   <!-- LOGO BLOCK (brand mark) -->
   <g id="logo">
-    <image id="logo-icon" href="${HARMONY_ICON_DATA_URL}"
+    <image class="harmony-icon" href="${HARMONY_ICON_DATA_URL}"
            x="${logoStartX}" y="${logoTopY}" width="${iconW}" height="${iconH}"
-           preserveAspectRatio="xMidYMid meet"/>
+           preserveAspectRatio="xMidYMid meet" filter="url(#harmonyTint)"/>
 
     <text class="harmony-title" x="${logoTextX}" y="${titleBaseY}"
           font-family="'${titleFont}', serif" font-weight="700"
@@ -605,6 +614,14 @@ function normalizeRegions(r: GradientMode[] | undefined): GradientMode[] {
     if (!seen.has(v)) { seen.add(v); out.push(v); }
   }
   return out;
+}
+
+function hexToMatrix(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace("#", "");
+  const v = h.length === 3
+    ? h.split("").map((c) => parseInt(c + c, 16))
+    : [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  return { r: +(v[0] / 255).toFixed(4), g: +(v[1] / 255).toFixed(4), b: +(v[2] / 255).toFixed(4) };
 }
 
 function escapeXml(s: string): string {
