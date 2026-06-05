@@ -616,6 +616,14 @@ function normalizeRegions(r: GradientMode[] | undefined): GradientMode[] {
   return out;
 }
 
+function hexToMatrix(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace("#", "");
+  const v = h.length === 3
+    ? h.split("").map((c) => parseInt(c + c, 16))
+    : [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  return { r: +(v[0] / 255).toFixed(4), g: +(v[1] / 255).toFixed(4), b: +(v[2] / 255).toFixed(4) };
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
