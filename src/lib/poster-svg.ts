@@ -1,3 +1,5 @@
+import { HARMONY_ICON_DATA_URL, HARMONY_ICON_W, HARMONY_ICON_H } from "./harmony-icon";
+
 export type PosterTheme = "milk" | "ocean";
 export type GradientMode = "full" | "top" | "bottom";
 
